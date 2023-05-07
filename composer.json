@@ -1,0 +1,23 @@
+{
+    "name": "takeoto/strict",
+    "description": "The tool for the confident value usage.",
+    "type": "library",
+    "keywords": ["takeoto", "validation", "strict", "check", "assert", "php"],
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Vladysalv Vernyhora",
+            "email": "vladyslav.vernyhora@gmail.com",
+            "homepage": "https://github.com/takeoto"
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Takeoto\\Strict\\": "src/"
+        }
+    }
+}
