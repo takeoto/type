@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Takeoto\Strict\Type;
+namespace Takeoto\Type\Type;
 
-use Takeoto\Strict\Contract\MixedXInterface;
-use Takeoto\Strict\Contract\ObjectXInterface;
-use Takeoto\Strict\Type;
+use Takeoto\Type\Contract\MixedXInterface;
+use Takeoto\Type\Contract\ObjectXInterface;
+use Takeoto\Type\Type;
 
 class ObjectX implements ObjectXInterface
 {

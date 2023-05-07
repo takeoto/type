@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Takeoto\Strict\Contract;
+namespace Takeoto\Type\Contract;
 
-use Takeoto\Strict\Type;
+use Takeoto\Type\Type;
 
 class NullOr
 {

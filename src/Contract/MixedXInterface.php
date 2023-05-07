@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Takeoto\Strict\Contract;
+namespace Takeoto\Type\Contract;
 
 interface MixedXInterface
 {

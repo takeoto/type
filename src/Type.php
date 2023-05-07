@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Takeoto\Strict;
+namespace Takeoto\Type;
 
-use Takeoto\Strict\Contract\MixedXInterface;
-use Takeoto\Strict\Type\MixedX;
+use Takeoto\Type\Contract\MixedXInterface;
+use Takeoto\Type\Type\MixedX;
 
 class Type
 {

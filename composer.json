@@ -1,8 +1,8 @@
 {
-    "name": "takeoto/strict",
+    "name": "takeoto/type",
     "description": "The tool for the confident value usage.",
     "type": "library",
-    "keywords": ["takeoto", "validation", "strict", "check", "assert", "php"],
+    "keywords": ["takeoto", "type", "validation", "strict", "check", "assert", "php"],
     "license": "MIT",
     "minimum-stability": "dev",
     "authors": [
@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Takeoto\\Strict\\": "src/"
+            "Takeoto\\Type\\": "src/"
         }
     }
 }

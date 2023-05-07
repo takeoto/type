@@ -1,16 +1,25 @@
-# type
-Tools of types manipulating
+# The type
+#### Tools for manipulation of data types
 
 ```php
 use \Takeoto\Strict\Contract\NullOr;
+use \Takeoto\Strict\Type\ArrayX;
+$shouldBeInt = NullOr::int('some string'); # throws the exception
+$shouldBeInt = NullOr::int(123); # assigns 123 number
+$shouldBeInt = NullOr::int(null); # assigns NULL number
 
-Type::array($array, true)->get('key')->nullOrInt();
+$array = [
+    'key0' => 'key0_value',
+    'key1' => [
+        'key1.1' => 12345
+    ],
+];
 
-Type::array($array)->get('key')->errorIfNot('The value should be an int.')->int();
+# Uncaught Takeoto\Type\Exception\ArrayXKeyNotFound: The key "key0123" does not exists!
+ArrayX::new($array)->get('key0123');
+ArrayX::new($array)->get('key0')->string(); # "key0_value"        
+ArrayX::new($array)->get('key0')->int(); # Expected an integer. Got: string in
+ArrayX::new($array)->get('key0')->errorIfNot('Yours custom error message!')->int(); # Yours custom error message!
 
 Type::array($array);
-
-
-# v2
-Type::arrayGetInt($array, 'key');
 ```

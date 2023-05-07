@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Takeoto\Strict\Type;
+namespace Takeoto\Type\Type;
 
-use Takeoto\Strict\Contract\ArrayXInterface;
-use Takeoto\Strict\Contract\MixedXInterface;
-use Takeoto\Strict\Type;
+use Takeoto\Type\Contract\ArrayXInterface;
+use Takeoto\Type\Contract\MixedXInterface;
+use Takeoto\Type\Type;
 
 class MixedX implements MixedXInterface
 {

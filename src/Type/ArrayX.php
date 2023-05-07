@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Takeoto\Strict\Type;
+namespace Takeoto\Type\Type;
 
-use Takeoto\Strict\Contract\ArrayXInterface;
-use Takeoto\Strict\Contract\MixedXInterface;
-use Takeoto\Strict\Type;
+use Takeoto\Type\Contract\ArrayXInterface;
+use Takeoto\Type\Contract\MixedXInterface;
+use Takeoto\Type\Exception\ArrayXKeyNotFound;
+use Takeoto\Type\Type;
 
 class ArrayX implements ArrayXInterface
 {
@@ -34,7 +35,7 @@ class ArrayX implements ArrayXInterface
     public function get(int|string $key): MixedXInterface
     {
         if (!$this->has($key)) {
-            throw new \ArrayXKeyNotFound(sprintf('The key "%s" does not exists!', $key));
+            throw new ArrayXKeyNotFound(sprintf('The key "%s" does not exists!', $key));
         }
 
         return MixedX::new($this->array[$key]);
