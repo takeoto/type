@@ -16,10 +16,10 @@ $array = [
 ];
 
 # Uncaught Takeoto\Type\Exception\ArrayXKeyNotFound: The key "key0123" does not exists!
-ArrayX::new($array)->get('key0123');
-ArrayX::new($array)->get('key0')->string(); # "key0_value"        
-ArrayX::new($array)->get('key0')->int(); # Expected an integer. Got: string in
-ArrayX::new($array)->get('key0')->errorIfNot('Yours custom error message!')->int(); # Yours custom error message!
+Type::arrayX($array)->get('key0123');
+Type::arrayX($array)->get('key0')->string(); # "key0_value"        
+Type::arrayX($array)->get('key0')->int(); # Expected an integer. Got: string in
+Type::arrayX($array)->get('key0')->errorIfNot('Yours custom error message!')->int(); # Yours custom error message!
 
-Type::array($array);
+Type::arrayX($array);
 ```

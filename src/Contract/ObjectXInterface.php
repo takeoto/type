@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Contract;
 
-# need improve [__call]
+
 #/**
 # * @template-covariant T of object
 # * @mixin T
@@ -30,4 +30,9 @@ interface ObjectXInterface
      * @return T0
      */
     public function instanceOf(string $class): object;
+
+    /**
+     * @return object
+     */
+    public function object(): object;
 }

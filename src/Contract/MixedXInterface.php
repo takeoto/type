@@ -8,40 +8,45 @@ interface MixedXInterface
 {
     /**
      * @return int
+     * @throws \Throwable
      */
     public function int(): int;
 
     /**
      * @return float
+     * @throws \Throwable
      */
     public function float(): float;
 
     /**
      * @return string
+     * @throws \Throwable
      */
     public function string(): string;
 
     /**
      * @param bool $asObjectX
      * @return ($asObjectX is true ? ObjectXInterface : object)
+     * @throws \Throwable
      */
     public function object(bool $asObjectX = false): object;
 
     /**
      * @param bool $asArrayX
-     * @return ($asArrayX is true ? ArrayXInterface : mixed[])
+     * @return ($asArrayX is true ? ArrayXInterface<int|string,mixed> : array<int|string,mixed>)
+     * @throws \Throwable
      */
     public function array(bool $asArrayX = false): array|ArrayXInterface;
 
     /**
-     * @throws \Throwable
      * @return bool
+     * @throws \Throwable
      */
     public function bool(): bool;
 
     /**
-     * @throws \Throwable
      * @return mixed
+     * @throws \Throwable
      */
     public function mixed(): mixed;
 

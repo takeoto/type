@@ -56,7 +56,9 @@ class MixedX implements MixedXInterface
     }
 
     /**
-     * @inheritDoc
+     * @param bool $asArrayX
+     * @return ($asArrayX is true ? ArrayXInterface<int|string,mixed> : array<int|string,mixed>)
+     * @throws \Throwable
      */
     public function array(bool $asArrayX = false): array|ArrayXInterface
     {

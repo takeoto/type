@@ -13,6 +13,8 @@ class ObjectX implements ObjectXInterface
     private object $object;
 
     /**
+     * @param mixed $object
+     * @param string|null $errorMessage
      * @throws \Throwable
      */
     public function __construct(mixed $object, string $errorMessage = null)
@@ -31,9 +33,12 @@ class ObjectX implements ObjectXInterface
         return new self($object, $errorMessage);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function __get(string $key): MixedXInterface
     {
-        return MixedX::new($this->object->$key);
+        return Type::mixedX($this->object->$key);
     }
 
     /**
@@ -53,13 +58,19 @@ class ObjectX implements ObjectXInterface
     }
 
     /**
-     * @param string $name
-     * @param array<int,mixed> $arguments
-     * @return MixedXInterface
+     * @inheritDoc
      */
     public function __call(string $name, array $arguments): MixedXInterface
     {
         # @phpstan-ignore-next-line
-        return MixedX::new(call_user_func([$this->object, $name], $arguments));
+        return Type::mixedX(call_user_func([$this->object, $name], $arguments));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function object(): object
+    {
+        return $this->object;
     }
 }
