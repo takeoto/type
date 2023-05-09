@@ -172,7 +172,7 @@ class Type
      */
     public static function __callStatic(string $method, array $arguments): mixed
     {
-        return TypeUtility::callChain($method, $arguments, self::class);
+        return TypeUtility::callChain($method, $arguments, static::class);
     }
 
     private function __construct()

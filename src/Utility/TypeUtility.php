@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Utility;
 
+use Takeoto\Type\Contract\PredictableMagicCallInterface;
 use Takeoto\Type\Exception\WrongTypeException;
 
 /**
@@ -18,7 +19,6 @@ class TypeUtility
     public const TYPE_ARRAY = 'array';
     public const TYPE_OBJECT = 'object';
     public const TYPE_NULL = 'null';
-    public const MIXED_TYPE_DELIMITERS = ['|', 'Or'];
     public const TYPES_VERIFIERS = [
         'bool' => 'is_bool',
         'int' => 'is_int',
@@ -34,12 +34,8 @@ class TypeUtility
     # arrayXGetArrayX         (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > ArrayX
     # arrayXGet               (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > MixedX
     # arrayX                  (['key0.0' => [ 'key0.1' => 'value']])                     > ArrayX
-    public static function callChain(
-        string $method,
-        array $arguments,
-        object|string $target,
-        bool $forceCall = false
-    ): mixed {
+    public static function callChain(string $method, array $arguments, object|string $target): mixed
+    {
         $commandMethods = self::parseMethod($method);
 
         while (count($commandMethods) > 0) {
@@ -61,8 +57,11 @@ class TypeUtility
 
                 $callMethodDraft = $callMethodDraft === '' ? $method : $callMethodDraft . ucfirst($method);
                 $newMethod = $callMethod === '' ? $callMethodDraft : $callMethod . ucfirst($callMethodDraft);
+                $doesMethodExist = isset($callerMethods[$newMethod])
+                    || $target instanceof PredictableMagicCallInterface
+                    && $target->supportMagicCall($newMethod, array_slice($arguments, 0, $sequenceCount));
 
-                if (!isset($callerMethods[$newMethod])) {
+                if (!$doesMethodExist) {
                     continue;
                 }
 
@@ -73,10 +72,11 @@ class TypeUtility
 
                 $methodIndex = $index;
                 $callMethod = $newMethod;
+                var_dump($callMethod);
                 $callMethodDraft = '';
             }
 
-            if ($forceCall && !method_exists($target, $callMethod)) {
+            if (!method_exists($target, $callMethod)) {
                 throw new \Exception('Method does not exist: ' . $callMethod);
 
             }
@@ -107,12 +107,9 @@ class TypeUtility
 
     public static function normalizeType(string $type): array
     {
-        # need improve [full pattern + explode]
-        $types = preg_split('/(?<!^|[A-Z^])Or(?=[A-Z])/', $type); # need improve [|]
-
         return array_map(
             fn(string $type): string => self::hasType($normalizedType = strtolower($type)) ? $normalizedType : $type,
-            $types
+            explode('|', $type),
         );
     }
 

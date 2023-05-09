@@ -6,10 +6,11 @@ namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\ArrayXInterface;
 use Takeoto\Type\Contract\MixedXInterface;
+use Takeoto\Type\Contract\PredictableMagicCallInterface;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\TypeUtility;
 
-class MixedX implements MixedXInterface
+class MixedX implements MixedXInterface, PredictableMagicCallInterface
 {
     private ?string $customErrorMessage = null;
 
@@ -108,14 +109,14 @@ class MixedX implements MixedXInterface
 
     public function __call(string $method, array $arguments): mixed
     {
-        $types = TypeUtility::normalizeType($method);
+        $types = preg_split('/(?<!^|[A-Z^])Or(?=[A-Z])/', $method);
 
         if (count($types) === 1) {
             throw new \Exception('Method does not exist: ' . $method);
         }
 
-        foreach ($types as $type) {
-            if (TypeUtility::verifyType($this->value, $type)) {
+        foreach ($types as &$type) {
+            if (TypeUtility::verifyType($this->value, $type = strtolower($type))) {
                 return $this->value;
             }
         }
@@ -127,5 +128,21 @@ class MixedX implements MixedXInterface
         ));
     }
 
+    public function supportMagicCall(string $method, array $arguments): bool
+    {
+        $methodParts = TypeUtility::parseMethod($method);
+        $shouldBeType = true;
 
+        for ($i = count($methodParts) - 1; $i > 0; $i--) {
+            $part = $methodParts[$i];
+            $isTypeCall = $shouldBeType ? TypeUtility::hasType(strtolower($part)) : $part === 'Or';
+            $shouldBeType = !$shouldBeType;
+
+            if (!$isTypeCall) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
