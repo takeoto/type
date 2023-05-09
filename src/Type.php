@@ -55,7 +55,8 @@ class Type
     {
         TypeUtility::ensureType($value, TypeUtility::TYPE_INT, $message ?? 'Expected an integer. Got: %s');
 
-        return (int)$value;
+        /** @var int $value */
+        return $value;
     }
 
     /**
@@ -68,7 +69,8 @@ class Type
     {
         TypeUtility::ensureType($value, TypeUtility::TYPE_FLOAT, $message ?? 'Expected a float. Got: %s');
 
-        return (float)$value;
+        /** @var float $value */
+        return $value;
     }
 
     /**
@@ -81,7 +83,8 @@ class Type
     {
         TypeUtility::ensureType($value, TypeUtility::TYPE_STRING, $message ?? 'Expected a string. Got: %s');
 
-        return (string)$value;
+        /** @var string $value */
+        return $value;
     }
 
     /**
@@ -95,7 +98,8 @@ class Type
     {
         TypeUtility::ensureType($value, TypeUtility::TYPE_OBJECT, $message ?? 'Expected an object. Got: %s');
 
-        return (object)$value;
+        /** @var object $value */
+        return $value;
     }
 
     /**
@@ -108,7 +112,8 @@ class Type
     {
         TypeUtility::ensureType($value, TypeUtility::TYPE_ARRAY, $message ?? 'Expected an array. Got: %s');
 
-        return (array)$value;
+        /** @var mixed[] $value */
+        return $value;
     }
 
     /**
@@ -121,7 +126,8 @@ class Type
     {
         TypeUtility::ensureType($value, TypeUtility::TYPE_BOOL, $message ?? 'Expected a boolean. Got: %s');
 
-        return (bool)$value;
+        /** @var bool $value */
+        return $value;
     }
 
     /**

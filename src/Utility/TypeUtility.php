@@ -60,6 +60,10 @@ class TypeUtility
         return isset(self::TYPES_VERIFIERS[$type]);
     }
 
+    /**
+     * @param string $type
+     * @return string[]
+     */
     public static function normalizeType(string $type): array
     {
         return array_map(

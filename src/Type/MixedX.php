@@ -6,6 +6,7 @@ namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\ArrayXInterface;
 use Takeoto\Type\Contract\MixedXInterface;
+use Takeoto\Type\Contract\ObjectXInterface;
 use Takeoto\Type\Contract\PredictableMagicCallInterface;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
@@ -59,7 +60,7 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
     /**
      * @inheritDoc
      */
-    public function objectX(): object
+    public function objectX(): ObjectXInterface
     {
         return ObjectX::new($this->value, $this->customErrorMessage);
     }
@@ -108,11 +109,14 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function __call(string $method, array $arguments): mixed
     {
         $types = preg_split('/(?<!^|[A-Z^])Or(?=[A-Z])/', $method);
 
-        if (count($types) === 1) {
+        if ($types === false || count($types) === 1) {
             throw new \Exception('Method does not exist: ' . $method);
         }
 
@@ -129,6 +133,9 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
         ));
     }
 
+    /**
+     * @inheritDoc
+     */
     public function supportMagicCall(string $method, array $arguments): bool
     {
         $methodParts = CallUtility::parseMethod($method);

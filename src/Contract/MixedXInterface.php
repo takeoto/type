@@ -25,22 +25,22 @@ interface MixedXInterface
     public function string(): string;
 
     /**
-     * @return ObjectXInterface
+     * @return object
      * @throws \Throwable
      */
     public function object(): object;
+
+    /**
+     * @return ObjectXInterface
+     * @throws \Throwable
+     */
+    public function objectX(): ObjectXInterface;
 
     /**
      * @return array<int|string,mixed>
      * @throws \Throwable
      */
     public function array(): array;
-
-    /**
-     * @return ObjectXInterface
-     * @throws \Throwable
-     */
-    public function objectX(): object;
 
     /**
      * @return ArrayXInterface<int|string,mixed>

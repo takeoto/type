@@ -4,6 +4,11 @@ namespace Takeoto\Type\Contract;
 
 interface PredictableMagicCallInterface
 {
+    /**
+     * @param string $method
+     * @param mixed[] $arguments
+     * @return bool
+     */
     public function supportMagicCall(string $method, array $arguments): bool;
 
     /**

@@ -11,16 +11,28 @@ use Takeoto\Type\Contract\PredictableMagicCallInterface;
  */
 final class CallUtility
 {
-    # arrayXGetArrayXGetString(['key0.0' => [ 'key0.1' => 'value']], 'key0.0', 'key0.1') > "value"
-    # arrayXGetArrayXGet      (['key0.0' => [ 'key0.1' => 'value']], 'key0.0', 'key0.1') > MixedX
-    # arrayXGetArrayX         (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > ArrayX
-    # arrayXGet               (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > MixedX
-    # arrayX                  (['key0.0' => [ 'key0.1' => 'value']])                     > ArrayX
+    /**
+     * arrayXGetArrayXGetString(['key0.0' => [ 'key0.1' => 'value']], 'key0.0', 'key0.1') > "value"
+     * arrayXGetArrayXGet      (['key0.0' => [ 'key0.1' => 'value']], 'key0.0', 'key0.1') > MixedX
+     * arrayXGetArrayX         (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > ArrayX
+     * arrayXGet               (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > MixedX
+     * arrayX                  (['key0.0' => [ 'key0.1' => 'value']])                     > ArrayX
+     *
+     * @param string $method
+     * @param mixed[] $arguments
+     * @param object|string $target
+     * @return mixed
+     * @throws \Exception
+     */
     public static function callChain(string $method, array $arguments, object|string $target): mixed
     {
         $commandMethods = self::parseMethod($method);
 
         while (count($commandMethods) > 0) {
+            if (!is_object($target) && !is_string($target)) {
+                throw new \RuntimeException(sprintf('Can not call %s type.', TypeUtility::typeToString($target)));
+            }
+
             $callerMethods = array_flip(get_class_methods($target));
             $callMethod = '';
             $callMethodDraft = '';
@@ -59,22 +71,27 @@ final class CallUtility
 
             $callIt = method_exists($target, $callMethod)
                 || (is_object($target) && method_exists($target, '__call'))
-                || (class_exists($target) && method_exists($target, '__callStatic'));
+                || (is_string($target) && class_exists($target) && method_exists($target, '__callStatic'));
+            $callback = [$target, $callMethod];
 
-            if (!$callIt) {
+            if (!$callIt || !is_callable($callback)) {
                 throw new \Exception('Method does not exist: ' . $callMethod);
 
             }
 
-            $target = call_user_func([$target, $callMethod], ...array_splice($arguments, 0, $sequenceCount));
+            $target = call_user_func($callback, ...array_splice($arguments, 0, $sequenceCount));
             array_splice($commandMethods, 0, $methodIndex + 1);
         }
 
         return $target;
     }
 
+    /**
+     * @param string $method
+     * @return string[]
+     */
     public static function parseMethod(string $method): array
     {
-        return preg_split('/(?=[A-Z])/', $method);
+        return preg_split('/(?=[A-Z])/', $method) ?: [];
     }
 }
