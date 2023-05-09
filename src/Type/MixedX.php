@@ -122,23 +122,7 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
      */
     public function __call(string $method, array $arguments): mixed
     {
-        $types = preg_split('/(?<!^|[A-Z^])Or(?=[A-Z])/', $method);
-
-        if ($types === false || count($types) === 1) {
-            throw new \Exception('Method does not exist: ' . $method);
-        }
-
-        foreach ($types as &$type) {
-            if (TypeUtility::verifyType($this->value, $type = strtolower($type))) {
-                return $this->value;
-            }
-        }
-
-        TypeUtility::throwWrongTypeException(\sprintf(
-            $this->customErrorMessage ?? 'The value should be one of types %s. Got: %s',
-            implode('|', $types),
-            TypeUtility::typeToString($this->value),
-        ));
+        return CallUtility::strictTypeCall($method, [$this->value, $this->customErrorMessage]);
     }
 
     /**
@@ -146,19 +130,6 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
      */
     public function supportMagicCall(string $method, array $arguments): bool
     {
-        $methodParts = CallUtility::parseMethod($method);
-        $shouldBeType = true;
-
-        for ($i = count($methodParts) - 1; $i > 0; $i--) {
-            $part = $methodParts[$i];
-            $isTypeCall = $shouldBeType ? TypeUtility::hasType(strtolower($part)) : $part === 'Or';
-            $shouldBeType = !$shouldBeType;
-
-            if (!$isTypeCall) {
-                return false;
-            }
-        }
-
-        return true;
+        return CallUtility::isStrictTypeCall($method, [$this->value, $this->customErrorMessage]);
     }
 }

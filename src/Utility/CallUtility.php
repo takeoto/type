@@ -94,4 +94,68 @@ final class CallUtility
     {
         return preg_split('/(?=[A-Z])/', $method) ?: [];
     }
+
+    /**
+     * @param string $method
+     * @param mixed[] $arguments
+     * @return mixed
+     * @throws \Throwable
+     */
+    public static function strictTypeCall(string $method, array $arguments): mixed
+    {
+        if (!array_key_exists(0, $arguments)) {
+            throw new \InvalidArgumentException(sprintf(
+                'The first argument of %s method should be a value.',
+                $method,
+            ));
+        }
+
+        $value = $arguments[0];
+        $errorMessage = $arguments[1] ?? 'The value should be one of types %s. Got: %s';
+        TypeUtility::ensure(
+            $errorMessage,
+            TypeUtility::TYPE_STRING,
+            sprintf('The second argument of %s method should be an error message.', $method),
+        );
+        $types = preg_split('/(?<!^|[A-Z^])Or(?=[A-Z])/', $method);
+
+        if ($types === false || count($types) === 1) {
+            throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
+        }
+
+        foreach ($types as &$type) {
+            if (TypeUtility::verifyType($value, $type = strtolower($type))) {
+                return $value;
+            }
+        }
+
+        TypeUtility::throwWrongTypeException(\sprintf(
+            $errorMessage,
+            implode('|', $types),
+            TypeUtility::typeToString($value),
+        ));
+    }
+
+    /**
+     * @param string $method
+     * @param mixed[] $arguments
+     * @return bool
+     */
+    public static function isStrictTypeCall(string $method, array $arguments): bool
+    {
+        $methodParts = CallUtility::parseMethod($method);
+        $shouldBeType = true;
+
+        for ($i = count($methodParts) - 1; $i > 0; $i--) {
+            $part = $methodParts[$i];
+            $isTypeCall = $shouldBeType ? TypeUtility::hasType(strtolower($part)) : $part === 'Or';
+            $shouldBeType = !$shouldBeType;
+
+            if (!$isTypeCall) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

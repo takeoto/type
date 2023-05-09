@@ -14,6 +14,12 @@ use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
 /**
+ * @method static null|int nullOrInt(mixed $value, ?string $errorMessage = null)
+ * @method static null|float nullOrFloat(mixed $value, ?string $errorMessage = null)
+ * @method static null|string nullOrString(mixed $value, ?string $errorMessage = null)
+ * @method static null|object nullOrObject(mixed $value, ?string $errorMessage = null)
+ * @method static null|array nullOrArray(mixed $value, ?string $errorMessage = null)
+ * @method static null|bool nullOrBool(mixed $value, ?string $errorMessage = null)
  * @method static int arrayXGetInt(mixed[] $array, string $key)
  * @method static float arrayXGetFloat(mixed[] $array, string $key)
  * @method static string arrayXGetString(mixed[] $array, string $key)
@@ -191,7 +197,9 @@ class Type
      */
     public static function __callStatic(string $method, array $arguments): mixed
     {
-        return CallUtility::callChain($method, $arguments, static::class);
+        return CallUtility::isStrictTypeCall($method, $arguments)
+            ? CallUtility::strictTypeCall($method, $arguments)
+            : CallUtility::callChain($method, $arguments, static::class);
     }
 
     private function __construct()
