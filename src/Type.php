@@ -17,6 +17,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|object nullOrObject(mixed $value, ?string $errorMessage = null)
  * @method static null|array nullOrArray(mixed $value, ?string $errorMessage = null)
  * @method static null|bool nullOrBool(mixed $value, ?string $errorMessage = null)
+ * @method static ArrayX arrayXGet(mixed[] $array, string $key)
  * @method static int arrayXGetInt(mixed[] $array, string $key)
  * @method static float arrayXGetFloat(mixed[] $array, string $key)
  * @method static string arrayXGetString(mixed[] $array, string $key)
