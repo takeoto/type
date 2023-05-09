@@ -12,6 +12,14 @@ use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
+/**
+ * @method static null|int nullOrInt()
+ * @method static null|float nullOrFloat()
+ * @method static null|string nullOrString()
+ * @method static null|object nullOrObject()
+ * @method static null|array nullOrArray()
+ * @method static null|bool nullOrBool()
+ */
 class MixedX implements MixedXInterface, PredictableMagicCallInterface
 {
     private ?string $customErrorMessage = null;

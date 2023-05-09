@@ -53,7 +53,7 @@ class Type
      */
     public static function int(mixed $value, string $message = null): int
     {
-        TypeUtility::ensureType($value, TypeUtility::TYPE_INT, $message ?? 'Expected an integer. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_INT, $message ?? 'Expected an integer. Got: %s');
 
         /** @var int $value */
         return $value;
@@ -67,7 +67,7 @@ class Type
      */
     public static function float(mixed $value, string $message = null): float
     {
-        TypeUtility::ensureType($value, TypeUtility::TYPE_FLOAT, $message ?? 'Expected a float. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_FLOAT, $message ?? 'Expected a float. Got: %s');
 
         /** @var float $value */
         return $value;
@@ -81,7 +81,7 @@ class Type
      */
     public static function string(mixed $value, string $message = null): string
     {
-        TypeUtility::ensureType($value, TypeUtility::TYPE_STRING, $message ?? 'Expected a string. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_STRING, $message ?? 'Expected a string. Got: %s');
 
         /** @var string $value */
         return $value;
@@ -96,7 +96,7 @@ class Type
      */
     public static function object(mixed $value, string $message = null): object
     {
-        TypeUtility::ensureType($value, TypeUtility::TYPE_OBJECT, $message ?? 'Expected an object. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_OBJECT, $message ?? 'Expected an object. Got: %s');
 
         /** @var object $value */
         return $value;
@@ -110,7 +110,7 @@ class Type
      */
     public static function array(mixed $value, string $message = null): array
     {
-        TypeUtility::ensureType($value, TypeUtility::TYPE_ARRAY, $message ?? 'Expected an array. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_ARRAY, $message ?? 'Expected an array. Got: %s');
 
         /** @var mixed[] $value */
         return $value;
@@ -124,7 +124,7 @@ class Type
      */
     public static function bool(mixed $value, string $message = null): bool
     {
-        TypeUtility::ensureType($value, TypeUtility::TYPE_BOOL, $message ?? 'Expected a boolean. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_BOOL, $message ?? 'Expected a boolean. Got: %s');
 
         /** @var bool $value */
         return $value;
@@ -138,7 +138,7 @@ class Type
      */
     public static function null(mixed $value, string $message = null)
     {
-        TypeUtility::ensureType($value, TypeUtility::TYPE_NULL, $message ?? 'Expected a null. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_NULL, $message ?? 'Expected a null. Got: %s');
 
         return null;
     }

@@ -25,7 +25,7 @@ class TypeUtility
         'null' => 'is_null',
     ];
 
-    public static function ensureType(mixed $value, string $type, ?string $errorMessage = null): void
+    public static function ensure(mixed $value, string $type, ?string $errorMessage = null): void
     {
         $types = self::normalizeType($type);
 
