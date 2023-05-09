@@ -21,5 +21,6 @@ Type::arrayX($array)->get('key0')->string(); # "key0_value"
 Type::arrayX($array)->get('key0')->int(); # Expected an integer. Got: string in
 Type::arrayX($array)->get('key0')->errorIfNot('Yours custom error message!')->int(); # Yours custom error message!
 
-Type::arrayX($array);
+Type::arrayXGetInt($array);
+Type::arrayXGetErrorIfNotInt($array);
 ```

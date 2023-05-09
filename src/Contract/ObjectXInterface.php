@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Contract;
 
-
-#/**
-# * @template-covariant T of object
-# * @mixin T
-# */
 interface ObjectXInterface
 {
     /**

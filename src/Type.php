@@ -11,7 +11,26 @@ use Takeoto\Type\Exception\WrongTypeException;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
+use Takeoto\Type\Utility\TypeUtility;
 
+/**
+ * @method static int arrayXGetInt(mixed[] $array, string $key)
+ * @method static int arrayXGetFloat(mixed[] $array, string $key)
+ * @method static int arrayXGetString(mixed[] $array, string $key)
+ * @method static int arrayXGetObject(mixed[] $array, string $key)
+ * @method static int arrayXGetArray(mixed[] $array, string $key)
+ * @method static int arrayXGetBool(mixed[] $array, string $key)
+ * @method static int arrayXGetMixed(mixed[] $array, string $key)
+ * @method static int arrayXGetNull(mixed[] $array, string $key)
+ * @method static int arrayXGetErrorIfNotInt(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static int arrayXGetErrorIfNotFloat(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static int arrayXGetErrorIfNotString(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static int arrayXGetErrorIfNotObject(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static int arrayXGetErrorIfNotArray(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static int arrayXGetErrorIfNotBool(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static int arrayXGetErrorIfNotMixed(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static int arrayXGetErrorIfNotNull(mixed[] $array, string $key, ?string $errorMessage)
+ */
 class Type
 {
     /**
@@ -179,6 +198,17 @@ class Type
     public static function throwWrongTypeException(string $message): void
     {
         throw new WrongTypeException($message);
+    }
+
+    /**
+     * @param string $method
+     * @param mixed[] $arguments
+     * @return mixed
+     * @throws \Throwable
+     */
+    public static function __callStatic(string $method, array $arguments): mixed
+    {
+        return TypeUtility::chainCall($method, $arguments, self::class);
     }
 
     /**
