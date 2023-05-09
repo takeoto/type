@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\ArrayXInterface;
-use Takeoto\Type\Contract\MixedXInterface;
 use Takeoto\Type\Exception\ArrayXKeyNotFoundException;
 use Takeoto\Type\Type;
 
@@ -46,13 +45,13 @@ class ArrayX implements ArrayXInterface
     /**
      * @inheritDoc
      */
-    public function get(int|string $key): MixedXInterface
+    public function get(int|string $key): MixedX
     {
         if (!$this->has($key)) {
             throw new ArrayXKeyNotFoundException(sprintf('The key "%s" does not exists!', $key));
         }
 
-        return Type::mixedX($this->array[$key]);
+        return MixedX::new($this->array[$key]);
     }
 
     /**
@@ -75,7 +74,7 @@ class ArrayX implements ArrayXInterface
      * @inheritDoc
      * @throws \Throwable
      */
-    public function offsetGet(mixed $offset): MixedXInterface
+    public function offsetGet(mixed $offset): MixedX
     {
         return $this->get($offset);
     }
@@ -119,7 +118,7 @@ class ArrayX implements ArrayXInterface
     /**
      * @inheritDoc
      */
-    public function current(): MixedXInterface
+    public function current(): MixedX
     {
         return Type::mixedX(current($this->array));
     }

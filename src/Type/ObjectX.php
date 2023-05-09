@@ -7,6 +7,7 @@ namespace Takeoto\Type\Type;
 use Takeoto\Type\Contract\MixedXInterface;
 use Takeoto\Type\Contract\ObjectXInterface;
 use Takeoto\Type\Type;
+use Takeoto\Type\Utility\TypeUtility;
 
 class ObjectX implements ObjectXInterface
 {
@@ -19,7 +20,9 @@ class ObjectX implements ObjectXInterface
      */
     public function __construct(mixed $object, string $errorMessage = null)
     {
-        $this->object = Type::object($object, $errorMessage);
+        TypeUtility::ensure($object, TypeUtility::TYPE_OBJECT, $errorMessage);
+        /** @var object $object */
+        $this->object = $object;
     }
 
     /**
@@ -36,9 +39,18 @@ class ObjectX implements ObjectXInterface
     /**
      * @inheritDoc
      */
-    public function __get(string $key): MixedXInterface
+    public function __get(string $key): MixedX
     {
-        return Type::mixedX($this->object->$key);
+        return MixedX::new($this->object->$key);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __call(string $name, array $arguments): MixedX
+    {
+        # @phpstan-ignore-next-line
+        return MixedX::new(call_user_func([$this->object, $name], $arguments));
     }
 
     /**
@@ -55,15 +67,6 @@ class ObjectX implements ObjectXInterface
         }
 
         return $this->object;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function __call(string $name, array $arguments): MixedXInterface
-    {
-        # @phpstan-ignore-next-line
-        return Type::mixedX(call_user_func([$this->object, $name], $arguments));
     }
 
     /**

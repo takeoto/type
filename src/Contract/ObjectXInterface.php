@@ -20,9 +20,9 @@ interface ObjectXInterface
     public function __get(string $key): MixedXInterface;
 
     /**
-     * @template T0 of object
-     * @param class-string<T0> $class
-     * @return T0
+     * @template TInstance of object
+     * @param class-string<TInstance> $class
+     * @return TInstance
      */
     public function instanceOf(string $class): object;
 

@@ -2,7 +2,7 @@
 
 namespace Takeoto\Type\Contract;
 
-interface PredictableMagicCallInterface
+interface MagicCallableInterface
 {
     /**
      * @param string $method
@@ -15,6 +15,7 @@ interface PredictableMagicCallInterface
      * @param string $method
      * @param mixed[] $arguments
      * @return mixed
+     * @throws \Throwable
      */
     public function __call(string $method, array $arguments): mixed;
 }

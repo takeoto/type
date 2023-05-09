@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
-use Takeoto\Type\Contract\ArrayXInterface;
 use Takeoto\Type\Contract\MixedXInterface;
-use Takeoto\Type\Contract\ObjectXInterface;
-use Takeoto\Type\Contract\PredictableMagicCallInterface;
+use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
-use Takeoto\Type\Utility\TypeUtility;
 
 /**
  * @method static null|int nullOrInt()
@@ -20,7 +17,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|array nullOrArray()
  * @method static null|bool nullOrBool()
  */
-class MixedX implements MixedXInterface, PredictableMagicCallInterface
+class MixedX implements MixedXInterface, MagicCallableInterface
 {
     private ?string $customErrorMessage = null;
 
@@ -68,22 +65,9 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
     /**
      * @inheritDoc
      */
-    public function objectX(): ObjectXInterface
-    {
-        return ObjectX::new($this->value, $this->customErrorMessage);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function array(): array
     {
         return Type::array($this->value, $this->customErrorMessage);
-    }
-
-    public function arrayX(): ArrayXInterface
-    {
-        return ArrayX::new($this->value, $this->customErrorMessage);
     }
 
     /**
@@ -110,13 +94,6 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
         return Type::null($this->value, $this->customErrorMessage);
     }
 
-    public function errorIfNot(?string $message): static
-    {
-        $this->customErrorMessage = $message;
-
-        return $this;
-    }
-
     /**
      * @inheritDoc
      */
@@ -131,5 +108,34 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
     public function supportMagicCall(string $method, array $arguments): bool
     {
         return CallUtility::isStrictTypeCall($method, [$this->value, $this->customErrorMessage]);
+    }
+
+    /**
+     * @return ObjectX
+     * @throws \Throwable
+     */
+    public function objectX(): ObjectX
+    {
+        return ObjectX::new($this->value, $this->customErrorMessage);
+    }
+
+    /**
+     * @return ArrayX<int|string,mixed>
+     * @throws \Throwable
+     */
+    public function arrayX(): ArrayX
+    {
+        return ArrayX::new($this->value, $this->customErrorMessage);
+    }
+
+    /**
+     * @param string|null $message
+     * @return static
+     */
+    public function errorIfNot(?string $message): static
+    {
+        $this->customErrorMessage = $message;
+
+        return $this;
     }
 }

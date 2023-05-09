@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Takeoto\Type;
 
-use Takeoto\Type\Contract\ArrayXInterface;
-use Takeoto\Type\Contract\MixedXInterface;
-use Takeoto\Type\Contract\ObjectXInterface;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
@@ -151,9 +148,9 @@ class Type
 
     /**
      * @param mixed $value
-     * @return MixedXInterface
+     * @return MixedX
      */
-    public static function mixedX(mixed $value): MixedXInterface
+    public static function mixedX(mixed $value): MixedX
     {
         return MixedX::new($value);
     }
@@ -161,10 +158,10 @@ class Type
     /**
      * @param mixed $value
      * @param string|null $message
-     * @return ArrayXInterface<int|string,mixed>
+     * @return ArrayX<int|string,mixed>
      * @throws \Throwable
      */
-    public static function arrayX(mixed $value, string $message = null): ArrayXInterface
+    public static function arrayX(mixed $value, string $message = null): ArrayX
     {
         return ArrayX::new($value, $message);
     }
@@ -172,10 +169,10 @@ class Type
     /**
      * @param mixed $value
      * @param string|null $message
-     * @return ObjectXInterface
+     * @return ObjectX
      * @throws \Throwable
      */
-    public static function objectX(mixed $value, string $message = null): ObjectXInterface
+    public static function objectX(mixed $value, string $message = null): ObjectX
     {
         return ObjectX::new($value, $message);
     }

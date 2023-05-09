@@ -31,22 +31,10 @@ interface MixedXInterface
     public function object(): object;
 
     /**
-     * @return ObjectXInterface
-     * @throws \Throwable
-     */
-    public function objectX(): ObjectXInterface;
-
-    /**
      * @return array<int|string,mixed>
      * @throws \Throwable
      */
     public function array(): array;
-
-    /**
-     * @return ArrayXInterface<int|string,mixed>
-     * @throws \Throwable
-     */
-    public function arrayX(): ArrayXInterface;
 
     /**
      * @return bool
@@ -65,10 +53,4 @@ interface MixedXInterface
      * @throws \Throwable
      */
     public function null();
-
-    /**
-     * @param string|null $message
-     * @return static
-     */
-    public function errorIfNot(?string $message): static;
 }

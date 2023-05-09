@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Utility;
 
-use Takeoto\Type\Contract\PredictableMagicCallInterface;
+use Takeoto\Type\Contract\MagicCallableInterface;
 
 /**
  * @internal
@@ -52,7 +52,7 @@ final class CallUtility
                 $callMethodDraft = $callMethodDraft === '' ? $method : $callMethodDraft . ucfirst($method);
                 $newMethod = $callMethod === '' ? $callMethodDraft : $callMethod . ucfirst($callMethodDraft);
                 $doesMethodExist = isset($callerMethods[$newMethod])
-                    || $target instanceof PredictableMagicCallInterface
+                    || $target instanceof MagicCallableInterface
                     && $target->supportMagicCall($newMethod, array_slice($arguments, 0, $sequenceCount));
 
                 if (!$doesMethodExist) {
