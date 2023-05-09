@@ -10,25 +10,38 @@ use Takeoto\Type\Contract\ObjectXInterface;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
+use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
 /**
  * @method static int arrayXGetInt(mixed[] $array, string $key)
- * @method static int arrayXGetFloat(mixed[] $array, string $key)
- * @method static int arrayXGetString(mixed[] $array, string $key)
- * @method static int arrayXGetObject(mixed[] $array, string $key)
- * @method static int arrayXGetArray(mixed[] $array, string $key)
- * @method static int arrayXGetBool(mixed[] $array, string $key)
- * @method static int arrayXGetMixed(mixed[] $array, string $key)
- * @method static int arrayXGetNull(mixed[] $array, string $key)
+ * @method static float arrayXGetFloat(mixed[] $array, string $key)
+ * @method static string arrayXGetString(mixed[] $array, string $key)
+ * @method static object arrayXGetObject(mixed[] $array, string $key)
+ * @method static array arrayXGetArray(mixed[] $array, string $key)
+ * @method static bool arrayXGetBool(mixed[] $array, string $key)
+ * @method static mixed arrayXGetMixed(mixed[] $array, string $key)
+ * @method static null arrayXGetNull(mixed[] $array, string $key)
+ * @method static null|int arrayXGetNullOrInt(mixed[] $array, string $key)
+ * @method static null|float arrayXGetNullOrFloat(mixed[] $array, string $key)
+ * @method static null|string arrayXGetNullOrString(mixed[] $array, string $key)
+ * @method static null|object arrayXGetNullOrObject(mixed[] $array, string $key)
+ * @method static null|array arrayXGetNullOrArray(mixed[] $array, string $key)
+ * @method static null|bool arrayXGetNullOrBool(mixed[] $array, string $key)
  * @method static int arrayXGetErrorIfNotInt(mixed[] $array, string $key, ?string $errorMessage)
- * @method static int arrayXGetErrorIfNotFloat(mixed[] $array, string $key, ?string $errorMessage)
- * @method static int arrayXGetErrorIfNotString(mixed[] $array, string $key, ?string $errorMessage)
- * @method static int arrayXGetErrorIfNotObject(mixed[] $array, string $key, ?string $errorMessage)
- * @method static int arrayXGetErrorIfNotArray(mixed[] $array, string $key, ?string $errorMessage)
- * @method static int arrayXGetErrorIfNotBool(mixed[] $array, string $key, ?string $errorMessage)
- * @method static int arrayXGetErrorIfNotMixed(mixed[] $array, string $key, ?string $errorMessage)
- * @method static int arrayXGetErrorIfNotNull(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static float arrayXGetErrorIfNotFloat(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static string arrayXGetErrorIfNotString(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static object arrayXGetErrorIfNotObject(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static array arrayXGetErrorIfNotArray(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static bool arrayXGetErrorIfNotBool(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static mixed arrayXGetErrorIfNotMixed(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static null arrayXGetErrorIfNotNull(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static null|int arrayXGetErrorIfNotNullOrInt(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static null|float arrayXGetErrorIfNotNullOrFloat(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static null|string arrayXGetErrorIfNotNullOrString(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static null|object arrayXGetErrorIfNotNullOrObject(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static null|array arrayXGetErrorIfNotNullOrArray(mixed[] $array, string $key, ?string $errorMessage)
+ * @method static null|bool arrayXGetErrorIfNotNullOrBool(mixed[] $array, string $key, ?string $errorMessage)
  */
 class Type
 {
@@ -172,7 +185,7 @@ class Type
      */
     public static function __callStatic(string $method, array $arguments): mixed
     {
-        return TypeUtility::callChain($method, $arguments, static::class);
+        return CallUtility::callChain($method, $arguments, static::class);
     }
 
     private function __construct()

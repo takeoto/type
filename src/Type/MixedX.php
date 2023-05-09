@@ -8,6 +8,7 @@ use Takeoto\Type\Contract\ArrayXInterface;
 use Takeoto\Type\Contract\MixedXInterface;
 use Takeoto\Type\Contract\PredictableMagicCallInterface;
 use Takeoto\Type\Type;
+use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
 class MixedX implements MixedXInterface, PredictableMagicCallInterface
@@ -130,7 +131,7 @@ class MixedX implements MixedXInterface, PredictableMagicCallInterface
 
     public function supportMagicCall(string $method, array $arguments): bool
     {
-        $methodParts = TypeUtility::parseMethod($method);
+        $methodParts = CallUtility::parseMethod($method);
         $shouldBeType = true;
 
         for ($i = count($methodParts) - 1; $i > 0; $i--) {

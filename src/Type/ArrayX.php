@@ -13,6 +13,12 @@ use Takeoto\Type\Type;
  * @template TKey of array-key
  * @template TValue
  * @implements ArrayXInterface<TKey, TValue>
+ * @method static null|int nullOrInt(mixed[] $array, string $key)
+ * @method static null|float nullOrFloat(mixed[] $array, string $key)
+ * @method static null|string nullOrString(mixed[] $array, string $key)
+ * @method static null|object nullOrObject(mixed[] $array, string $key)
+ * @method static null|array nullOrArray(mixed[] $array, string $key)
+ * @method static null|bool nullOrBool(mixed[] $array, string $key)
  */
 class ArrayX implements ArrayXInterface
 {
