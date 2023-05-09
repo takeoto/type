@@ -7,6 +7,7 @@ namespace Takeoto\Type\Type;
 use Takeoto\Type\Contract\ArrayXInterface;
 use Takeoto\Type\Contract\MixedXInterface;
 use Takeoto\Type\Type;
+use Takeoto\Type\Utility\TypeUtility;
 
 class MixedX implements MixedXInterface
 {
@@ -48,23 +49,30 @@ class MixedX implements MixedXInterface
     /**
      * @inheritDoc
      */
-    public function object(bool $asObjectX = false): object
+    public function object(): object
     {
-        return $asObjectX
-            ? ObjectX::new($this->value, $this->customErrorMessage)
-            : Type::object($this->value, $this->customErrorMessage);
+        return Type::object($this->value, $this->customErrorMessage);
     }
 
     /**
-     * @param bool $asArrayX
-     * @return ($asArrayX is true ? ArrayXInterface<int|string,mixed> : array<int|string,mixed>)
-     * @throws \Throwable
+     * @inheritDoc
      */
-    public function array(bool $asArrayX = false): array|ArrayXInterface
+    public function objectX(): object
     {
-        return $asArrayX
-            ? ArrayX::new($this->value, $this->customErrorMessage)
-            : Type::array($this->value, $this->customErrorMessage);
+        return ObjectX::new($this->value, $this->customErrorMessage);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function array(): array
+    {
+        return Type::array($this->value, $this->customErrorMessage);
+    }
+
+    public function arrayX(): ArrayXInterface
+    {
+        return ArrayX::new($this->value, $this->customErrorMessage);
     }
 
     /**
@@ -97,4 +105,27 @@ class MixedX implements MixedXInterface
 
         return $this;
     }
+
+    public function __call(string $method, array $arguments): mixed
+    {
+        $types = TypeUtility::normalizeType($method);
+
+        if (count($types) === 1) {
+            throw new \Exception('Method does not exist: ' . $method);
+        }
+
+        foreach ($types as $type) {
+            if (TypeUtility::verifyType($this->value, $type)) {
+                return $this->value;
+            }
+        }
+
+        TypeUtility::throwWrongTypeException(\sprintf(
+            $this->customErrorMessage ?? 'The value should be one of types %s. Got: %s',
+            implode('|', $types),
+            TypeUtility::typeToString($this->value),
+        ));
+    }
+
+
 }

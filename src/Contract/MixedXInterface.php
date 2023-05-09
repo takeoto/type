@@ -25,18 +25,28 @@ interface MixedXInterface
     public function string(): string;
 
     /**
-     * @param bool $asObjectX
-     * @return ($asObjectX is true ? ObjectXInterface : object)
+     * @return ObjectXInterface
      * @throws \Throwable
      */
-    public function object(bool $asObjectX = false): object;
+    public function object(): object;
 
     /**
-     * @param bool $asArrayX
-     * @return ($asArrayX is true ? ArrayXInterface<int|string,mixed> : array<int|string,mixed>)
+     * @return array<int|string,mixed>
      * @throws \Throwable
      */
-    public function array(bool $asArrayX = false): array|ArrayXInterface;
+    public function array(): array;
+
+    /**
+     * @return ObjectXInterface
+     * @throws \Throwable
+     */
+    public function objectX(): object;
+
+    /**
+     * @return ArrayXInterface<int|string,mixed>
+     * @throws \Throwable
+     */
+    public function arrayX(): ArrayXInterface;
 
     /**
      * @return bool

@@ -7,7 +7,6 @@ namespace Takeoto\Type;
 use Takeoto\Type\Contract\ArrayXInterface;
 use Takeoto\Type\Contract\MixedXInterface;
 use Takeoto\Type\Contract\ObjectXInterface;
-use Takeoto\Type\Exception\WrongTypeException;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
@@ -41,14 +40,9 @@ class Type
      */
     public static function int(mixed $value, string $message = null): int
     {
-        if (!\is_int($value)) {
-            static::throwWrongTypeException(\sprintf(
-                $message ?? 'Expected an integer. Got: %s',
-                static::typeToString($value)
-            ));
-        }
+        TypeUtility::ensureType($value, TypeUtility::TYPE_INT, $message ?? 'Expected an integer. Got: %s');
 
-        return $value;
+        return (int)$value;
     }
 
     /**
@@ -59,14 +53,9 @@ class Type
      */
     public static function float(mixed $value, string $message = null): float
     {
-        if (!\is_float($value)) {
-            static::throwWrongTypeException(\sprintf(
-                $message ?? 'Expected a float. Got: %s',
-                static::typeToString($value)
-            ));
-        }
+        TypeUtility::ensureType($value, TypeUtility::TYPE_FLOAT, $message ?? 'Expected a float. Got: %s');
 
-        return $value;
+        return (float)$value;
     }
 
     /**
@@ -77,14 +66,9 @@ class Type
      */
     public static function string(mixed $value, string $message = null): string
     {
-        if (!\is_string($value)) {
-            static::throwWrongTypeException(\sprintf(
-                $message ?? 'Expected a string. Got: %s',
-                static::typeToString($value)
-            ));
-        }
+        TypeUtility::ensureType($value, TypeUtility::TYPE_STRING, $message ?? 'Expected a string. Got: %s');
 
-        return $value;
+        return (string)$value;
     }
 
     /**
@@ -96,14 +80,9 @@ class Type
      */
     public static function object(mixed $value, string $message = null): object
     {
-        if (!\is_object($value)) {
-            static::throwWrongTypeException(\sprintf(
-                $message ?? 'Expected an object. Got: %s',
-                static::typeToString($value)
-            ));
-        }
+        TypeUtility::ensureType($value, TypeUtility::TYPE_OBJECT, $message ?? 'Expected an object. Got: %s');
 
-        return $value;
+        return (object)$value;
     }
 
     /**
@@ -114,14 +93,9 @@ class Type
      */
     public static function array(mixed $value, string $message = null): array
     {
-        if (!\is_array($value)) {
-            static::throwWrongTypeException(\sprintf(
-                $message ?? 'Expected an array. Got: %s',
-                static::typeToString($value)
-            ));
-        }
+        TypeUtility::ensureType($value, TypeUtility::TYPE_ARRAY, $message ?? 'Expected an array. Got: %s');
 
-        return $value;
+        return (array)$value;
     }
 
     /**
@@ -132,12 +106,7 @@ class Type
      */
     public static function bool(mixed $value, string $message = null): bool
     {
-        if (!\is_bool($value)) {
-            static::throwWrongTypeException(\sprintf(
-                $message ?? 'Expected a boolean. Got: %s',
-                static::typeToString($value)
-            ));
-        }
+        TypeUtility::ensureType($value, TypeUtility::TYPE_BOOL, $message ?? 'Expected a boolean. Got: %s');
 
         return (bool)$value;
     }
@@ -150,12 +119,7 @@ class Type
      */
     public static function null(mixed $value, string $message = null)
     {
-        if (!\is_null($value)) {
-            static::throwWrongTypeException(\sprintf(
-                $message ?? 'Expected a null. Got: %s',
-                static::typeToString($value)
-            ));
-        }
+        TypeUtility::ensureType($value, TypeUtility::TYPE_NULL, $message ?? 'Expected a null. Got: %s');
 
         return null;
     }
@@ -195,9 +159,9 @@ class Type
      * @throws \Throwable
      * @return never-return
      */
-    public static function throwWrongTypeException(string $message): void
+    protected static function throwWrongTypeException(string $message): void
     {
-        throw new WrongTypeException($message);
+        TypeUtility::throwWrongTypeException($message);
     }
 
     /**
@@ -208,16 +172,7 @@ class Type
      */
     public static function __callStatic(string $method, array $arguments): mixed
     {
-        return TypeUtility::chainCall($method, $arguments, self::class);
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    protected static function typeToString(mixed $value): string
-    {
-        return \is_object($value) ? \get_class($value) : \gettype($value);
+        return TypeUtility::callChain($method, $arguments, self::class);
     }
 
     private function __construct()
