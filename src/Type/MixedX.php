@@ -16,6 +16,7 @@ use Takeoto\Type\Utility\CallUtility;
  * @method static null|object nullOrObject()
  * @method static null|array nullOrArray()
  * @method static null|bool nullOrBool()
+ * @method static null|callable nullOrCallable()
  */
 class MixedX implements MixedXInterface, MagicCallableInterface
 {
@@ -81,6 +82,14 @@ class MixedX implements MixedXInterface, MagicCallableInterface
     /**
      * @inheritDoc
      */
+    public function callable(): callable
+    {
+        return Type::callable($this->value, $this->customErrorMessage);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function mixed(): mixed
     {
         return $this->value;
@@ -99,6 +108,10 @@ class MixedX implements MixedXInterface, MagicCallableInterface
      */
     public function __call(string $method, array $arguments): mixed
     {
+        if (!$this->supportMagicCall($method, $arguments)) {
+            throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
+        }
+
         return CallUtility::strictTypeCall($method, [$this->value, $this->customErrorMessage]);
     }
 
@@ -107,7 +120,7 @@ class MixedX implements MixedXInterface, MagicCallableInterface
      */
     public function supportMagicCall(string $method, array $arguments): bool
     {
-        return CallUtility::isStrictTypeCall($method, [$this->value, $this->customErrorMessage]);
+        return CallUtility::isStrictTypeCall($method);
     }
 
     /**

@@ -43,6 +43,12 @@ interface MixedXInterface
     public function bool(): bool;
 
     /**
+     * @return callable
+     * @throws \Throwable
+     */
+    public function callable(): callable;
+
+    /**
      * @return mixed
      * @throws \Throwable
      */

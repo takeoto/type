@@ -26,7 +26,7 @@ final class CallUtility
      */
     public static function callChain(string $method, array $arguments, object|string $target): mixed
     {
-        $commandMethods = self::parseMethod($method);
+        $commandMethods = iterator_to_array(self::iterateMethodParts($method));
 
         while (count($commandMethods) > 0) {
             if (!is_object($target) && !is_string($target)) {
@@ -35,38 +35,31 @@ final class CallUtility
 
             $callerMethods = array_flip(get_class_methods($target));
             $callMethod = '';
-            $callMethodDraft = '';
+            $argsCount = 0;
+            $composedMethod = '';
             $methodIndex = 0;
             $sequenceCount = 0;
-            $isSequence = 1;
 
             foreach ($commandMethods as $index => $method) {
-                $method = lcfirst($method);
-
                 if (isset($callerMethods[$method])) {
-                    $sequenceCount += $isSequence;
-                } else {
-                    $isSequence = 0;
+                    ++$sequenceCount;
                 }
 
-                $callMethodDraft = $callMethodDraft === '' ? $method : $callMethodDraft . ucfirst($method);
-                $newMethod = $callMethod === '' ? $callMethodDraft : $callMethod . ucfirst($callMethodDraft);
-                $doesMethodExist = isset($callerMethods[$newMethod])
+                $composedMethod = $composedMethod === '' ? $method : $composedMethod . ucfirst($method);
+                $method = $callMethod === '' ? $composedMethod : $callMethod . ucfirst($composedMethod);
+                $doesMethodExist = isset($callerMethods[$method])
                     || $target instanceof MagicCallableInterface
-                    && $target->supportMagicCall($newMethod, array_slice($arguments, 0, $sequenceCount));
+                    && $target->supportMagicCall($method, array_slice($arguments, 0, $argsCount + $sequenceCount));
 
                 if (!$doesMethodExist) {
                     continue;
                 }
 
-                if ($isSequence === 0) {
-                    $sequenceCount = 1;
-                    $isSequence = 1;
-                }
-
                 $methodIndex = $index;
-                $callMethod = $newMethod;
-                $callMethodDraft = '';
+                $callMethod = $method;
+                $argsCount += $argsCount === 0 ? 1 : $sequenceCount;
+                $sequenceCount = 0;
+                $composedMethod = '';
             }
 
             $callIt = method_exists($target, $callMethod)
@@ -79,20 +72,11 @@ final class CallUtility
 
             }
 
-            $target = call_user_func($callback, ...array_splice($arguments, 0, $sequenceCount));
+            $target = call_user_func($callback, ...array_splice($arguments, 0, $argsCount));
             array_splice($commandMethods, 0, $methodIndex + 1);
         }
 
         return $target;
-    }
-
-    /**
-     * @param string $method
-     * @return string[]
-     */
-    public static function parseMethod(string $method): array
-    {
-        return preg_split('/(?=[A-Z])/', $method) ?: [];
     }
 
     /**
@@ -104,58 +88,65 @@ final class CallUtility
     public static function strictTypeCall(string $method, array $arguments): mixed
     {
         if (!array_key_exists(0, $arguments)) {
+            throw new \InvalidArgumentException(sprintf('The first argument of %s method should be a value.', $method));
+        }
+
+        $value = $arguments[0];
+        $error = $arguments[1] ?? 'The value should be one of types %s. Got: %s';
+
+        if (!is_string($error) && $error !== null) {
             throw new \InvalidArgumentException(sprintf(
-                'The first argument of %s method should be a value.',
+                'The second argument of %s method should be an error message.',
                 $method,
             ));
         }
 
-        $value = $arguments[0];
-        $errorMessage = $arguments[1] ?? 'The value should be one of types %s. Got: %s';
-        TypeUtility::ensure(
-            $errorMessage,
-            TypeUtility::TYPE_STRING,
-            sprintf('The second argument of %s method should be an error message.', $method),
-        );
-        $types = preg_split('/(?<!^|[A-Z^])Or(?=[A-Z])/', $method);
+        $types = [];
 
-        if ($types === false || count($types) === 1) {
-            throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
-        }
-
-        foreach ($types as &$type) {
-            if (TypeUtility::verifyType($value, $type = strtolower($type))) {
+        foreach (self::iterateMethodParts($method, 'Or') as $type) {
+            if (TypeUtility::verifyType($value, $types[$type] = $type)) {
                 return $value;
             }
         }
 
-        TypeUtility::throwWrongTypeException(\sprintf(
-            $errorMessage,
-            implode('|', $types),
-            TypeUtility::typeToString($value),
-        ));
+        TypeUtility::throwWrongTypeException(\sprintf($error, implode('|', $types), TypeUtility::typeToString($value)));
     }
 
     /**
      * @param string $method
-     * @param mixed[] $arguments
      * @return bool
      */
-    public static function isStrictTypeCall(string $method, array $arguments): bool
+    public static function isStrictTypeCall(string $method): bool
     {
-        $methodParts = CallUtility::parseMethod($method);
-        $shouldBeType = true;
-
-        for ($i = count($methodParts) - 1; $i > 0; $i--) {
-            $part = $methodParts[$i];
-            $isTypeCall = $shouldBeType ? TypeUtility::hasType(strtolower($part)) : $part === 'Or';
-            $shouldBeType = !$shouldBeType;
-
-            if (!$isTypeCall) {
+        foreach (self::iterateMethodParts($method, 'Or') as $type) {
+            if ($type === '' || !TypeUtility::hasType($type)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private static function iterateMethodParts(string $method, string $delimiter = null): iterable
+    {
+        $methodParts = preg_split('/(?=[A-Z])/', $method) ?: [];
+
+        if ($delimiter === null || $delimiter === '') {
+            yield from array_map('lcfirst', $methodParts);
+            return;
+        }
+
+        $composedType = '';
+
+        foreach ($methodParts as $part) {
+            if ($part === $delimiter) {
+                yield lcfirst($composedType);
+                $composedType = '';
+            } else {
+                $composedType = $composedType === '' ? $part : $composedType . $part;
+            }
+        }
+
+        yield lcfirst($composedType);
     }
 }
