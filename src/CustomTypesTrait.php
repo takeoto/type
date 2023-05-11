@@ -7,14 +7,25 @@ use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
 /**
- * @method static null|int nullOrInt(mixed $value, ?string $errorMessage = null)
- * @method static null|float nullOrFloat(mixed $value, ?string $errorMessage = null)
- * @method static null|string nullOrString(mixed $value, ?string $errorMessage = null)
- * @method static null|object nullOrObject(mixed $value, ?string $errorMessage = null)
- * @method static null|array nullOrArray(mixed $value, ?string $errorMessage = null)
- * @method static null|bool nullOrBool(mixed $value, ?string $errorMessage = null)
- * @method static null|callable nullOrCallable(mixed $value, ?string $errorMessage = null)
+ * @method static mixed notEmpty(mixed $value, ?string $error = null)
+ * @method static float|string|object|array|bool|callable|null|iterable notInt(mixed $value, ?string $error = null)
+ * @method static int|string|object|array|bool|callable|null|iterable notFloat(mixed $value, ?string $error = null)
+ * @method static int|float|object|array|bool|callable|null|iterable notString(mixed $value, ?string $error = null)
+ * @method static int|float|string|array|bool|callable|null|iterable notObject(mixed $value, ?string $error = null)
+ * @method static int|float|string|object|bool|callable|null|iterable notArray(mixed $value, ?string $error = null)
+ * @method static int|float|string|object|array|callable|null|iterable notBool(mixed $value, ?string $error = null)
+ * @method static int|float|string|object|array|bool|null|iterable notCallable(mixed $value, ?string $error = null)
+ *
+ * @method static null|int nullOrInt(mixed $value, ?string $error = null)
+ * @method static null|float nullOrFloat(mixed $value, ?string $error = null)
+ * @method static null|string nullOrString(mixed $value, ?string $error = null)
+ * @method static null|object nullOrObject(mixed $value, ?string $error = null)
+ * @method static null|array nullOrArray(mixed $value, ?string $error = null)
+ * @method static null|bool nullOrBool(mixed $value, ?string $error = null)
+ * @method static null|callable nullOrCallable(mixed $value, ?string $error = null)
+ *
  * @method static ArrayX arrayXGet(mixed[] $array, string $key)
+ *
  * @method static int arrayXGetInt(mixed[] $array, string $key)
  * @method static float arrayXGetFloat(mixed[] $array, string $key)
  * @method static string arrayXGetString(mixed[] $array, string $key)
@@ -24,6 +35,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static callable arrayXGetCallable(mixed[] $array, string $key)
  * @method static mixed arrayXGetMixed(mixed[] $array, string $key)
  * @method static null arrayXGetNull(mixed[] $array, string $key)
+ *
  * @method static null|int arrayXGetNullOrInt(mixed[] $array, string $key)
  * @method static null|float arrayXGetNullOrFloat(mixed[] $array, string $key)
  * @method static null|string arrayXGetNullOrString(mixed[] $array, string $key)
@@ -31,35 +43,49 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|array arrayXGetNullOrArray(mixed[] $array, string $key)
  * @method static null|bool arrayXGetNullOrBool(mixed[] $array, string $key)
  * @method static null|callable arrayXGetNullOrCallable(mixed[] $array, string $key)
- * @method static int arrayXGetErrorIfNotInt(mixed[] $array, string $key, ?string $errorMessage)
- * @method static float arrayXGetErrorIfNotFloat(mixed[] $array, string $key, ?string $errorMessage)
- * @method static string arrayXGetErrorIfNotString(mixed[] $array, string $key, ?string $errorMessage)
- * @method static object arrayXGetErrorIfNotObject(mixed[] $array, string $key, ?string $errorMessage)
- * @method static array arrayXGetErrorIfNotArray(mixed[] $array, string $key, ?string $errorMessage)
- * @method static bool arrayXGetErrorIfNotBool(mixed[] $array, string $key, ?string $errorMessage)
- * @method static callable arrayXGetErrorIfNotCallable(mixed[] $array, string $key, ?string $errorMessage)
- * @method static mixed arrayXGetErrorIfNotMixed(mixed[] $array, string $key, ?string $errorMessage)
- * @method static null arrayXGetErrorIfNotNull(mixed[] $array, string $key, ?string $errorMessage)
- * @method static null|int arrayXGetErrorIfNotNullOrInt(mixed[] $array, string $key, ?string $errorMessage)
- * @method static null|float arrayXGetErrorIfNotNullOrFloat(mixed[] $array, string $key, ?string $errorMessage)
- * @method static null|string arrayXGetErrorIfNotNullOrString(mixed[] $array, string $key, ?string $errorMessage)
- * @method static null|object arrayXGetErrorIfNotNullOrObject(mixed[] $array, string $key, ?string $errorMessage)
- * @method static null|array arrayXGetErrorIfNotNullOrArray(mixed[] $array, string $key, ?string $errorMessage)
- * @method static null|bool arrayXGetErrorIfNotNullOrBool(mixed[] $array, string $key, ?string $errorMessage)
+ *
+ * @method static int arrayXGetErrorIfNotInt(mixed[] $array, string $key, ?string $error = null)
+ * @method static float arrayXGetErrorIfNotFloat(mixed[] $array, string $key, ?string $error = null)
+ * @method static string arrayXGetErrorIfNotString(mixed[] $array, string $key, ?string $error = null)
+ * @method static object arrayXGetErrorIfNotObject(mixed[] $array, string $key, ?string $error = null)
+ * @method static array arrayXGetErrorIfNotArray(mixed[] $array, string $key, ?string $error = null)
+ * @method static bool arrayXGetErrorIfNotBool(mixed[] $array, string $key, ?string $error = null)
+ * @method static callable arrayXGetErrorIfNotCallable(mixed[] $array, string $key, ?string $error = null)
+ * @method static null arrayXGetErrorIfNotNull(mixed[] $array, string $key, ?string $error = null)
+ *
+ * @method static null|int arrayXGetErrorIfNotNullOrInt(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|float arrayXGetErrorIfNotNullOrFloat(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|string arrayXGetErrorIfNotNullOrString(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|object arrayXGetErrorIfNotNullOrObject(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|array arrayXGetErrorIfNotNullOrArray(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|bool arrayXGetErrorIfNotNullOrBool(mixed[] $array, string $key, ?string $error = null)
  */
 trait CustomTypesTrait
 {
     /**
      * @param mixed $value
-     * @param string|null $message
+     * @param string|null $error
      * @return string
      * @throws \Throwable
      */
-    public static function stringInt(mixed $value, string $message = null): string
+    public static function stringInt(mixed $value, string $error = null): string
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_STRING_INT, $message ?? 'Expected an int as a string. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_STRING_INT, $error ?? 'Expected an int as a string. Got: %s');
 
         /** @var string $value */
+        return $value;
+    }
+
+    /**
+     * @param mixed $value
+     * @param string|null $error
+     * @return mixed
+     * @throws \Throwable
+     */
+    public static function empty(mixed $value, string $error = null): mixed
+    {
+        TypeUtility::ensure($value, TypeUtility::TYPE_EMPTY, $error ?? 'Expected an int as an empty. Got: %s');
+
         return $value;
     }
 

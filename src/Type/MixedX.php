@@ -142,6 +142,43 @@ class MixedX implements MixedXInterface, MagicCallableInterface
     }
 
     /**
+     * @return iterable
+     * @throws \Throwable
+     */
+    public function iterable(): iterable
+    {
+        return Type::iterable($this->value, $this->customErrorMessage);
+    }
+
+    /**
+     * @return string|int|float
+     * @throws \Throwable
+     */
+    public function numeric(): string|int|float
+    {
+        return Type::numeric($this->value, $this->customErrorMessage);
+    }
+
+    /**
+     * @return bool
+     * @throws \Throwable
+     */
+    public function true(): bool
+    {
+        return Type::true($this->value, $this->customErrorMessage);
+    }
+
+    /**
+     * @return bool
+     * @throws \Throwable
+     */
+    public function false(): bool
+    {
+        return Type::false($this->value, $this->customErrorMessage);
+    }
+
+
+    /**
      * @param string|null $message
      * @return static
      */

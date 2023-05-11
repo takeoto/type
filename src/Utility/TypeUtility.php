@@ -17,11 +17,14 @@ class TypeUtility
     public const TYPE_OBJECT = 'object';
     public const TYPE_NULL = 'null';
     public const TYPE_CALLABLE = 'callable';
-    # system
+    # pseudo
     public const TYPE_ITERABLE = 'iterable';
     public const TYPE_NUMERIC = 'numeric';
+    public const TYPE_TRUE = 'true';
+    public const TYPE_FALSE = 'false';
     # custom
     public const TYPE_STRING_INT = 'stringInt';
+    public const TYPE_EMPTY = 'empty';
     public const TYPES_VERIFIERS = [
         # base
         self::TYPE_BOOL => 'is_bool',
@@ -35,9 +38,22 @@ class TypeUtility
         # system
         self::TYPE_ITERABLE => 'is_iterable',
         self::TYPE_NUMERIC => 'is_numeric',
+        self::TYPE_TRUE => [self::class, 'isTrue'],
+        self::TYPE_FALSE => [self::class, 'isFalse'],
         # custom
         self::TYPE_STRING_INT => [self::class, 'isStringInt'],
+        self::TYPE_EMPTY => 'empty',
     ];
+
+    public static function isTrue(mixed $value): bool
+    {
+        return $value === true;
+    }
+
+    public static function isFalse(mixed $value): bool
+    {
+        return $value === false;
+    }
 
     public static function isStringInt(mixed $value): bool
     {

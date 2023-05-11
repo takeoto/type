@@ -62,6 +62,10 @@ final class CallUtility
                 $composedMethod = '';
             }
 
+            if ($callMethod === '') {
+                throw new \Exception('Method does not exist: ' . $composedMethod);
+            }
+
             $callIt = method_exists($target, $callMethod)
                 || (is_object($target) && method_exists($target, '__call'))
                 || (is_string($target) && class_exists($target) && method_exists($target, '__callStatic'));
@@ -104,7 +108,13 @@ final class CallUtility
         $types = [];
 
         foreach (self::iterateMethodParts($method, 'Or') as $type) {
-            if (TypeUtility::verifyType($value, $types[$type] = $type)) {
+            $types[$type] = $type;
+
+            if ($isNegative = str_starts_with($type, 'not')) {
+                $type = lcfirst(substr($type, 3));
+            }
+
+            if (TypeUtility::verifyType($value, $type) xor $isNegative) {
                 return $value;
             }
         }
@@ -119,6 +129,10 @@ final class CallUtility
     public static function isStrictTypeCall(string $method): bool
     {
         foreach (self::iterateMethodParts($method, 'Or') as $type) {
+            if (str_starts_with($type, 'not')) {
+                $type = lcfirst(substr($type, 3));
+            }
+            var_dump($type);
             if ($type === '' || !TypeUtility::hasType($type)) {
                 return false;
             }
