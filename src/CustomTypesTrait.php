@@ -15,6 +15,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static int|float|string|object|bool|callable|null|iterable notArray(mixed $value, ?string $error = null)
  * @method static int|float|string|object|array|callable|null|iterable notBool(mixed $value, ?string $error = null)
  * @method static int|float|string|object|array|bool|null|iterable notCallable(mixed $value, ?string $error = null)
+ * @method static int|float|string|object|array|bool|callable|iterable notNull(mixed $value, ?string $error = null)
  *
  * @method static null|int nullOrInt(mixed $value, ?string $error = null)
  * @method static null|float nullOrFloat(mixed $value, ?string $error = null)

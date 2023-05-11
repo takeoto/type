@@ -27,10 +27,16 @@ final class CallUtility
     public static function callChain(string $method, array $arguments, object|string $target): mixed
     {
         $commandMethods = iterator_to_array(self::iterateMethodParts($method));
+        $callsStackTrace = [];
 
         while (count($commandMethods) > 0) {
-            if (!is_object($target) && !is_string($target)) {
-                throw new \RuntimeException(sprintf('Can not call %s type.', TypeUtility::typeToString($target)));
+            if (!is_object($target) && !(is_string($target) && class_exists($target))) {
+                $callsStackTrace[] = '(' . TypeUtility::typeToString($target) . ')::';
+                throw new \RuntimeException(sprintf(
+                    'The call chain is not allowed by a "%s". %s' . PHP_EOL,
+                    $method,
+                    implode(PHP_EOL . '> ', $callsStackTrace),
+                ));
             }
 
             $callerMethods = array_flip(get_class_methods($target));
@@ -76,6 +82,8 @@ final class CallUtility
 
             }
 
+            $callsStackTrace[] = (is_string($target) ? $target : TypeUtility::typeToString($target))
+                . '::' . $callMethod . '([' . $argsCount . '])';
             $target = call_user_func($callback, ...array_splice($arguments, 0, $argsCount));
             array_splice($commandMethods, 0, $methodIndex + 1);
         }
