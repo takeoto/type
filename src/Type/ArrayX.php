@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\ArrayXInterface;
+use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Exception\ArrayXKeyNotFoundException;
 use Takeoto\Type\Type;
+use Takeoto\Type\Utility\CallUtility;
 
 /**
  * @template TKey of array-key
  * @template TValue
  * @implements ArrayXInterface<TKey, TValue>
  */
-class ArrayX implements ArrayXInterface
+class ArrayX implements ArrayXInterface, MagicCallableInterface
 {
     /**
      * @var array<TKey,TValue>
@@ -153,5 +155,19 @@ class ArrayX implements ArrayXInterface
     public function rewind(): void
     {
         reset($this->array);
+    }
+
+    public function supportMagicCall(string $method): bool
+    {
+        return CallUtility::isTransitCall($method, $this);
+    }
+
+    public function __call(string $method, array $arguments): mixed
+    {
+        if (!$this->supportMagicCall($method)) {
+            throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
+        }
+
+        return CallUtility::callTransit($method, $arguments, $this);
     }
 }

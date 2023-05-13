@@ -5,92 +5,13 @@ declare(strict_types=1);
 namespace Takeoto\Type\Utility;
 
 use Takeoto\Type\Contract\MagicCallableInterface;
+use Takeoto\Type\Contract\MagicStaticCallableInterface;
 
 /**
  * @internal
  */
 final class CallUtility
 {
-    /**
-     * arrayXGetArrayXGetString(['key0.0' => [ 'key0.1' => 'value']], 'key0.0', 'key0.1') > "value"
-     * arrayXGetArrayXGet      (['key0.0' => [ 'key0.1' => 'value']], 'key0.0', 'key0.1') > MixedX
-     * arrayXGetArrayX         (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > ArrayX
-     * arrayXGet               (['key0.0' => [ 'key0.1' => 'value']], 'key0.0')           > MixedX
-     * arrayX                  (['key0.0' => [ 'key0.1' => 'value']])                     > ArrayX
-     *
-     * @param string $method
-     * @param mixed[] $arguments
-     * @param object|string $target
-     * @return mixed
-     * @throws \Exception
-     */
-    public static function callChain(string $method, array $arguments, object|string $target): mixed
-    {
-        $commandMethods = iterator_to_array(self::iterateMethodParts($method));
-        $callsStackTrace = [];
-
-        while (count($commandMethods) > 0) {
-            if (!is_object($target) && !(is_string($target) && class_exists($target))) {
-                $callsStackTrace[] = '(' . TypeUtility::typeToString($target) . ')::';
-                throw new \RuntimeException(sprintf(
-                    'The call chain is not allowed by a "%s". %s' . PHP_EOL,
-                    $method,
-                    implode(PHP_EOL . '> ', $callsStackTrace),
-                ));
-            }
-
-            $callerMethods = array_flip(get_class_methods($target));
-            $callMethod = '';
-            $argsCount = 0;
-            $composedMethod = '';
-            $methodIndex = 0;
-            $sequenceCount = 0;
-
-            foreach ($commandMethods as $index => $method) {
-                if (isset($callerMethods[$method])) {
-                    ++$sequenceCount;
-                }
-
-                $composedMethod = $composedMethod === '' ? $method : $composedMethod . ucfirst($method);
-                $method = $callMethod === '' ? $composedMethod : $callMethod . ucfirst($composedMethod);
-                $doesMethodExist = isset($callerMethods[$method])
-                    || $target instanceof MagicCallableInterface
-                    && $target->supportMagicCall($method, array_slice($arguments, 0, $argsCount + $sequenceCount));
-
-                if (!$doesMethodExist) {
-                    continue;
-                }
-
-                $methodIndex = $index;
-                $callMethod = $method;
-                $argsCount += $argsCount === 0 ? 1 : $sequenceCount;
-                $sequenceCount = 0;
-                $composedMethod = '';
-            }
-
-            if ($callMethod === '') {
-                throw new \Exception('Method does not exist: ' . $composedMethod);
-            }
-
-            $callIt = method_exists($target, $callMethod)
-                || (is_object($target) && method_exists($target, '__call'))
-                || (is_string($target) && class_exists($target) && method_exists($target, '__callStatic'));
-            $callback = [$target, $callMethod];
-
-            if (!$callIt || !is_callable($callback)) {
-                throw new \Exception('Method does not exist: ' . $callMethod);
-
-            }
-
-            $callsStackTrace[] = (is_string($target) ? $target : TypeUtility::typeToString($target))
-                . '::' . $callMethod . '([' . $argsCount . '])';
-            $target = call_user_func($callback, ...array_splice($arguments, 0, $argsCount));
-            array_splice($commandMethods, 0, $methodIndex + 1);
-        }
-
-        return $target;
-    }
-
     /**
      * @param string $method
      * @param mixed[] $arguments
@@ -130,6 +51,58 @@ final class CallUtility
         TypeUtility::throwWrongTypeException(\sprintf($error, implode('|', $types), TypeUtility::typeToString($value)));
     }
 
+    public static function callTransit(
+        string $method,
+        array $arguments,
+        string|object $target,
+        \Closure $methodVerifier = null
+    ): mixed {
+        CallUtility::ensureCallable($target);
+        $targetMethod = CallUtility::parseMethod($method, $target, $methodVerifier);
+
+        if ($targetMethod === null) {
+            throw new \RuntimeException(sprintf('The method "%s" does not exist.', $method));
+        }
+
+        $target = CallUtility::call($targetMethod, $target, [array_shift($arguments)]);
+        CallUtility::ensureCallable($target);
+
+        return CallUtility::call($method, $target, $arguments);
+    }
+
+    public static function callChain(
+        string $method,
+        array $arguments,
+        string|object $target,
+        \Closure $methodVerifier = null
+    ): mixed {
+        while (true) {
+            CallUtility::ensureCallable($target);
+            $targetMethod = CallUtility::parseMethod($method, $target, $methodVerifier);
+
+            if ($targetMethod === null) {
+                break;
+            }
+
+            CallUtility::ensureMethodExists($targetMethod, $target);
+            $target = CallUtility::call($targetMethod, $target, [array_shift($arguments)]);
+        }
+
+        if ($method !== '') {
+            throw new \RuntimeException(sprintf('Method "%s" is not part of chain call.', $method));
+        }
+
+        return $target;
+    }
+
+    public static function call(string $method, string|object $target, array $arguments = []): mixed
+    {
+        self::ensureCallable($target);
+        self::ensureMethodExists($method, $target);
+
+        return call_user_func([$target, $method], ...$arguments);
+    }
+
     /**
      * @param string $method
      * @return bool
@@ -140,7 +113,7 @@ final class CallUtility
             if (str_starts_with($type, 'not')) {
                 $type = lcfirst(substr($type, 3));
             }
-            var_dump($type);
+
             if ($type === '' || !TypeUtility::hasType($type)) {
                 return false;
             }
@@ -149,7 +122,79 @@ final class CallUtility
         return true;
     }
 
-    private static function iterateMethodParts(string $method, string $delimiter = null): iterable
+    public static function isTransitCall(string $method, string|object $target): bool
+    {
+        $composedMethod = null;
+
+        foreach (self::iterateMethodParts($method) as $method) {
+            $composedMethod = $composedMethod === null ? $method : $composedMethod . ucfirst($method);
+
+            if (method_exists($target, $composedMethod)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function isChainCall(string $method, \Closure $methodVerifier): bool
+    {
+        $composedMethod = '';
+        $methodsExistPositions = [];
+        $methodParts = iterator_to_array(self::iterateMethodParts($method));
+
+        for ($position = 0, $till = count($methodParts) - 1; $position <= $till; $position++) {
+            echo PHP_EOL, PHP_EOL;
+            $part = $methodParts[$position];
+            echo '$part > ' . $part . PHP_EOL;
+            $composedMethod = $composedMethod === '' ? $part : $composedMethod . ucfirst($part);
+            echo '$composedMethod > ' . $composedMethod . PHP_EOL;
+
+            if ($methodVerifier($composedMethod, $position, $till) === true) {
+                $methodsExistPositions[] = $position;
+                echo 'SUPPORT > ' . $composedMethod . PHP_EOL;
+                continue;
+            }
+
+            if ($position !== $till) {
+                continue;
+            }
+
+            var_dump($methodsExistPositions);
+            $position = array_pop($methodsExistPositions);
+            echo 'array_pop($methodsExistPositions) > ' . $position . PHP_EOL;
+            $composedMethod = '';
+
+            if ($position === null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static function parseMethod(string &$method, string|object $class, ?\Closure $verifier = null): ?string
+    {
+        $verifier ??= fn(string $method): bool => method_exists($class, $method);
+        $composedMethod = null;
+        $composedMethodDraft = '';
+
+        foreach (self::iterateMethodParts($method) as $part) {
+            $composedMethodDraft = $composedMethodDraft === '' ? $part : $composedMethodDraft . ucfirst($part);
+
+            if (!$verifier($composedMethodDraft)) {
+                continue;
+            }
+
+            $composedMethod = $composedMethodDraft;
+        }
+
+        $method = lcfirst(substr($method, strlen($composedMethod ?? '')) ?: '');
+
+        return $composedMethod;
+    }
+
+    public static function iterateMethodParts(string $method, string $delimiter = null): iterable
     {
         $methodParts = preg_split('/(?=[A-Z])/', $method) ?: [];
 
@@ -170,5 +215,29 @@ final class CallUtility
         }
 
         yield lcfirst($composedType);
+    }
+
+    public static function ensureCallable(mixed $target, string $error = '%s is not callable.'): void
+    {
+        if (!(is_object($target) || (is_string($target) && class_exists($target)))) {
+            throw new \RuntimeException(sprintf($error, TypeUtility::typeToString($target)));
+        }
+    }
+
+    public static function ensureMethodExists(string $method, string|object $target): void
+    {
+        if (!(method_exists($target, $method) || self::isSupportMagicMethod($method, $target))) {
+            throw new \RuntimeException(sprintf(
+                'The method %s::%s does not exist.',
+                is_string($target) ? $target : get_class($target),
+                $method,
+            ));
+        }
+    }
+
+    private static function isSupportMagicMethod(string $method, string|object $target): bool
+    {
+        return ($target instanceof MagicCallableInterface && $target->supportMagicCall($method))
+            || (is_a($target, MagicStaticCallableInterface::class) && $target::supportMagicStaticCall($method));
     }
 }

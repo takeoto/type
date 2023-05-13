@@ -104,26 +104,6 @@ class MixedX implements MixedXInterface, MagicCallableInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function __call(string $method, array $arguments): mixed
-    {
-        if (!$this->supportMagicCall($method, $arguments)) {
-            throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
-        }
-
-        return CallUtility::strictTypeCall($method, [$this->value, $this->customErrorMessage]);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportMagicCall(string $method, array $arguments): bool
-    {
-        return CallUtility::isStrictTypeCall($method);
-    }
-
-    /**
      * @return ObjectX
      * @throws \Throwable
      */
@@ -177,7 +157,6 @@ class MixedX implements MixedXInterface, MagicCallableInterface
         return Type::false($this->value, $this->customErrorMessage);
     }
 
-
     /**
      * @param string|null $message
      * @return static
@@ -187,5 +166,35 @@ class MixedX implements MixedXInterface, MagicCallableInterface
         $this->customErrorMessage = $message;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supportMagicCall(string $method): bool
+    {
+        return CallUtility::isChainCall(
+            $method,
+            fn(string $method, int $step, int $steps) => method_exists($this, $method)
+                || ($step === $steps && CallUtility::isStrictTypeCall($method))
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __call(string $method, array $arguments): mixed
+    {
+        if (!$this->supportMagicCall($method)) {
+            throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
+        }
+
+        if (CallUtility::isStrictTypeCall($method)) {
+            return CallUtility::strictTypeCall($method, [$this->value, $this->customErrorMessage]);
+        }
+
+        return CallUtility::callChain($method, $arguments, $this, fn(string $m) => method_exists($this, $m)
+            || CallUtility::isStrictTypeCall($m)
+        );
     }
 }

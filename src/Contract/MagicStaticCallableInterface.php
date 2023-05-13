@@ -2,13 +2,13 @@
 
 namespace Takeoto\Type\Contract;
 
-interface MagicCallableInterface
+interface MagicStaticCallableInterface
 {
     /**
      * @param string $method
      * @return bool
      */
-    public function supportMagicCall(string $method): bool;
+    public static function supportMagicStaticCall(string $method): bool;
 
     /**
      * @param string $method
@@ -16,5 +16,5 @@ interface MagicCallableInterface
      * @return mixed
      * @throws \Throwable
      */
-    public function __call(string $method, array $arguments): mixed;
+    public static function __callStatic(string $method, array $arguments): mixed;
 }

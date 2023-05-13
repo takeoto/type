@@ -90,6 +90,12 @@ trait CustomTypesTrait
         return $value;
     }
 
+    public static function supportMagicStaticCall(string $method): bool
+    {
+        return CallUtility::isStrictTypeCall($method)
+            || CallUtility::isTransitCall($method, self::class);
+    }
+
     /**
      * @param string $method
      * @param mixed[] $arguments
@@ -98,8 +104,14 @@ trait CustomTypesTrait
      */
     public static function __callStatic(string $method, array $arguments): mixed
     {
-        return CallUtility::isStrictTypeCall($method)
-            ? CallUtility::strictTypeCall($method, $arguments)
-            : CallUtility::callChain($method, $arguments, static::class);
+        if (!self::supportMagicStaticCall($method)) {
+            throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
+        }
+
+        if (CallUtility::isStrictTypeCall($method)) {
+            return CallUtility::strictTypeCall($method, $arguments);
+        }
+
+        return CallUtility::callTransit($method, $arguments, self::class);
     }
 }

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Takeoto\Type;
 
+use Takeoto\Type\Contract\MagicStaticCallableInterface;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
 use Takeoto\Type\Utility\TypeUtility;
 
-class Type
+class Type implements MagicStaticCallableInterface
 {
     use PseudoTypesTrait;
     use CustomTypesTrait;
