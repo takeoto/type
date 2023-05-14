@@ -173,8 +173,7 @@ class MixedX implements MixedXInterface, MagicCallableInterface
      */
     public function supportMagicCall(string $method): bool
     {
-        return CallUtility::isChainCall(
-            $method,
+        return CallUtility::isChainCall($method, $this,
             fn(string $method, int $step, int $steps) => method_exists($this, $method)
                 || ($step === $steps && CallUtility::isStrictTypeCall($method))
         );

@@ -2,12 +2,13 @@
 
 namespace Takeoto\Type;
 
-use http\Cookie;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
 /**
+ * NOT types
+ *
  * @method static mixed notEmpty(mixed $value, ?string $error = null)
  * @method static float|string|object|array|bool|callable|null|iterable notInt(mixed $value, ?string $error = null)
  * @method static int|string|object|array|bool|callable|null|iterable notFloat(mixed $value, ?string $error = null)
@@ -18,6 +19,8 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static int|float|string|object|array|bool|null|iterable notCallable(mixed $value, ?string $error = null)
  * @method static int|float|string|object|array|bool|callable|iterable notNull(mixed $value, ?string $error = null)
  *
+ * Multiple types
+ *
  * @method static null|int nullOrInt(mixed $value, ?string $error = null)
  * @method static null|float nullOrFloat(mixed $value, ?string $error = null)
  * @method static null|string nullOrString(mixed $value, ?string $error = null)
@@ -25,9 +28,12 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|array nullOrArray(mixed $value, ?string $error = null)
  * @method static null|bool nullOrBool(mixed $value, ?string $error = null)
  * @method static null|callable nullOrCallable(mixed $value, ?string $error = null)
+ * @method static null|string nullOrStringInt(mixed $value, ?string $error = null)
+ * @method static int|string intOrStringInt(mixed $value, ?string $error = null)
+ *
+ * ArrayX a strict value getting
  *
  * @method static ArrayX arrayXGet(mixed[] $array, string $key)
- *
  * @method static int arrayXGetInt(mixed[] $array, string $key)
  * @method static float arrayXGetFloat(mixed[] $array, string $key)
  * @method static string arrayXGetString(mixed[] $array, string $key)
@@ -38,6 +44,8 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static mixed arrayXGetMixed(mixed[] $array, string $key)
  * @method static null arrayXGetNull(mixed[] $array, string $key)
  *
+ * ArrayX a multiple type strict value getting
+ *
  * @method static null|int arrayXGetNullOrInt(mixed[] $array, string $key)
  * @method static null|float arrayXGetNullOrFloat(mixed[] $array, string $key)
  * @method static null|string arrayXGetNullOrString(mixed[] $array, string $key)
@@ -45,6 +53,8 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|array arrayXGetNullOrArray(mixed[] $array, string $key)
  * @method static null|bool arrayXGetNullOrBool(mixed[] $array, string $key)
  * @method static null|callable arrayXGetNullOrCallable(mixed[] $array, string $key)
+ *
+ * ArrayX a strict value getting (with a custom error message)
  *
  * @method static int arrayXGetErrorIfNotInt(mixed[] $array, string $key, ?string $error = null)
  * @method static float arrayXGetErrorIfNotFloat(mixed[] $array, string $key, ?string $error = null)
@@ -54,6 +64,9 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static bool arrayXGetErrorIfNotBool(mixed[] $array, string $key, ?string $error = null)
  * @method static callable arrayXGetErrorIfNotCallable(mixed[] $array, string $key, ?string $error = null)
  * @method static null arrayXGetErrorIfNotNull(mixed[] $array, string $key, ?string $error = null)
+ * @method static null arrayXGetErrorIfNotStringInt(mixed[] $array, string $key, ?string $error = null)
+ *
+ * ArrayX  a multiple type strict value getting (with a custom error message)
  *
  * @method static null|int arrayXGetErrorIfNotNullOrInt(mixed[] $array, string $key, ?string $error = null)
  * @method static null|float arrayXGetErrorIfNotNullOrFloat(mixed[] $array, string $key, ?string $error = null)
@@ -61,6 +74,8 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|object arrayXGetErrorIfNotNullOrObject(mixed[] $array, string $key, ?string $error = null)
  * @method static null|array arrayXGetErrorIfNotNullOrArray(mixed[] $array, string $key, ?string $error = null)
  * @method static null|bool arrayXGetErrorIfNotNullOrBool(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|string arrayXGetErrorIfNotNullOrStringInt(mixed[] $array, string $key, ?string $error = null)
+ * @method static int|string arrayXGetErrorIfNotIntOrStringInt(mixed[] $array, string $key, ?string $error = null)
  */
 trait CustomTypesTrait
 {
@@ -93,10 +108,10 @@ trait CustomTypesTrait
 
     public static function supportMagicStaticCall(string $method): bool
     {
-        $transitMethods = self::getTransitMethods();
+        $transitMethods = array_flip(static::getTransitMethods());
 
         return CallUtility::isStrictTypeCall($method)
-            || CallUtility::isTransitCall($method, self::class, fn(string $m) => in_array($m, $transitMethods));
+            || CallUtility::isTransitCall($method, self::class, fn(string $m) => isset($transitMethods[$m]));
     }
 
     /**

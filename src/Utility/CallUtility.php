@@ -124,6 +124,9 @@ final class CallUtility
      */
     public static function call(string $method, string|object $target, array $arguments = []): mixed
     {
+        echo '$method > ' . var_export($method, true), PHP_EOL;
+        echo '$target > ' . var_export($target, true), PHP_EOL;
+        echo '$arguments > ' . var_export($arguments, true), PHP_EOL, PHP_EOL;
         self::ensureCallable($target);
         self::ensureMethodExists($method, $target);
 
@@ -176,11 +179,13 @@ final class CallUtility
 
     /**
      * @param string $method
-     * @param \Closure(string $method, int $posstion, int $till):bool $methodVerifier
+     * @param class-string|object $target
+     * @param \Closure(string $method, int $position, int $till):bool|null $methodVerifier
      * @return bool
      */
-    public static function isChainCall(string $method, \Closure $methodVerifier): bool
+    public static function isChainCall(string $method, string|object $target, \Closure $methodVerifier = null): bool
     {
+        $methodVerifier ??= fn(string $method, int $position, int $till): bool => method_exists($target, $method);
         $composedMethod = '';
         $methodsExistPositions = [];
         $methodParts = iterator_to_array(self::iterateMethodParts($method));
