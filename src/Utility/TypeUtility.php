@@ -97,7 +97,11 @@ class TypeUtility
     {
         $condition = self::TYPES_VERIFIERS[$type] ?? throw new \Exception(sprintf('Unknown type %s', $type));
 
-        return $condition($value) === true;
+        if (!is_callable($condition)) {
+            throw new \Exception(sprintf('The %s type condition should be callable.', $type));
+        }
+
+        return call_user_func($condition, $value) === true;
     }
 
     public static function hasType(string $type): bool

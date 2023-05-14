@@ -159,7 +159,7 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface
 
     public function supportMagicCall(string $method): bool
     {
-        return CallUtility::isTransitCall($method, $this);
+        return CallUtility::isTransitCall($method, $this, fn(string $method) => in_array($method, ['get', 'current']));
     }
 
     public function __call(string $method, array $arguments): mixed

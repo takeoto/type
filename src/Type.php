@@ -158,6 +158,14 @@ class Type implements MagicStaticCallableInterface
         return ObjectX::new($value, $error);
     }
 
+    /**
+     * @return string[]
+     */
+    private static function getTransitMethods(): array
+    {
+        return ['arrayX', 'objectX'];
+    }
+
     private function __construct()
     {
     }

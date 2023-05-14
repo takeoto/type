@@ -122,7 +122,7 @@ class MixedX implements MixedXInterface, MagicCallableInterface
     }
 
     /**
-     * @return iterable
+     * @return iterable<array-key,mixed>
      * @throws \Throwable
      */
     public function iterable(): iterable

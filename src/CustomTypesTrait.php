@@ -2,6 +2,7 @@
 
 namespace Takeoto\Type;
 
+use http\Cookie;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
@@ -92,8 +93,10 @@ trait CustomTypesTrait
 
     public static function supportMagicStaticCall(string $method): bool
     {
+        $transitMethods = self::getTransitMethods();
+
         return CallUtility::isStrictTypeCall($method)
-            || CallUtility::isTransitCall($method, self::class);
+            || CallUtility::isTransitCall($method, self::class, fn(string $m) => in_array($m, $transitMethods));
     }
 
     /**

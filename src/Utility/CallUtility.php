@@ -25,7 +25,7 @@ final class CallUtility
         }
 
         $value = $arguments[0];
-        $error = $arguments[1] ?? 'The value should be one of types %s. Got: %s';
+        $error = $arguments[1] ?? null;
 
         if (!is_string($error) && $error !== null) {
             throw new \InvalidArgumentException(sprintf(
@@ -48,16 +48,26 @@ final class CallUtility
             }
         }
 
-        TypeUtility::throwWrongTypeException(\sprintf($error, implode('|', $types), TypeUtility::typeToString($value)));
+        TypeUtility::throwWrongTypeException(\sprintf(
+            $error ?? 'The value should be one of types %s. Got: %s',
+            implode('|', $types),
+            TypeUtility::typeToString($value)
+        ));
     }
 
+    /**
+     * @param string $method
+     * @param mixed[] $arguments
+     * @param class-string|object $target
+     * @param \Closure(string $method):bool|null $methodVerifier
+     * @return mixed
+     */
     public static function callTransit(
         string $method,
         array $arguments,
         string|object $target,
         \Closure $methodVerifier = null
     ): mixed {
-        CallUtility::ensureCallable($target);
         $targetMethod = CallUtility::parseMethod($method, $target, $methodVerifier);
 
         if ($targetMethod === null) {
@@ -65,11 +75,23 @@ final class CallUtility
         }
 
         $target = CallUtility::call($targetMethod, $target, [array_shift($arguments)]);
+
+        if ($method === '') {
+            return $target;
+        }
+
         CallUtility::ensureCallable($target);
 
         return CallUtility::call($method, $target, $arguments);
     }
 
+    /**
+     * @param string $method
+     * @param mixed[] $arguments
+     * @param class-string|object $target
+     * @param \Closure(string $method):bool|null $methodVerifier
+     * @return mixed
+     */
     public static function callChain(
         string $method,
         array $arguments,
@@ -84,7 +106,6 @@ final class CallUtility
                 break;
             }
 
-            CallUtility::ensureMethodExists($targetMethod, $target);
             $target = CallUtility::call($targetMethod, $target, [array_shift($arguments)]);
         }
 
@@ -95,12 +116,21 @@ final class CallUtility
         return $target;
     }
 
+    /**
+     * @param string $method
+     * @param class-string|object $target
+     * @param mixed[] $arguments
+     * @return mixed
+     */
     public static function call(string $method, string|object $target, array $arguments = []): mixed
     {
         self::ensureCallable($target);
         self::ensureMethodExists($method, $target);
 
-        return call_user_func([$target, $method], ...$arguments);
+        /** @var callable $callable */
+        $callable = [$target, $method];
+
+        return call_user_func($callable, ...$arguments);
     }
 
     /**
@@ -122,14 +152,21 @@ final class CallUtility
         return true;
     }
 
-    public static function isTransitCall(string $method, string|object $target): bool
+    /**
+     * @param string $method
+     * @param class-string|object $target
+     * @param \Closure(string $method):bool|null $methodVerifier
+     * @return bool
+     */
+    public static function isTransitCall(string $method, string|object $target, \Closure $methodVerifier = null): bool
     {
+        $methodVerifier ??= fn(string $method): bool => method_exists($target, $method);
         $composedMethod = null;
 
         foreach (self::iterateMethodParts($method) as $method) {
             $composedMethod = $composedMethod === null ? $method : $composedMethod . ucfirst($method);
 
-            if (method_exists($target, $composedMethod)) {
+            if ($methodVerifier($composedMethod)) {
                 return true;
             }
         }
@@ -137,6 +174,11 @@ final class CallUtility
         return false;
     }
 
+    /**
+     * @param string $method
+     * @param \Closure(string $method, int $posstion, int $till):bool $methodVerifier
+     * @return bool
+     */
     public static function isChainCall(string $method, \Closure $methodVerifier): bool
     {
         $composedMethod = '';
@@ -144,15 +186,11 @@ final class CallUtility
         $methodParts = iterator_to_array(self::iterateMethodParts($method));
 
         for ($position = 0, $till = count($methodParts) - 1; $position <= $till; $position++) {
-            echo PHP_EOL, PHP_EOL;
             $part = $methodParts[$position];
-            echo '$part > ' . $part . PHP_EOL;
             $composedMethod = $composedMethod === '' ? $part : $composedMethod . ucfirst($part);
-            echo '$composedMethod > ' . $composedMethod . PHP_EOL;
 
             if ($methodVerifier($composedMethod, $position, $till) === true) {
                 $methodsExistPositions[] = $position;
-                echo 'SUPPORT > ' . $composedMethod . PHP_EOL;
                 continue;
             }
 
@@ -160,9 +198,7 @@ final class CallUtility
                 continue;
             }
 
-            var_dump($methodsExistPositions);
             $position = array_pop($methodsExistPositions);
-            echo 'array_pop($methodsExistPositions) > ' . $position . PHP_EOL;
             $composedMethod = '';
 
             if ($position === null) {
@@ -173,7 +209,13 @@ final class CallUtility
         return true;
     }
 
-    public static function parseMethod(string &$method, string|object $class, ?\Closure $verifier = null): ?string
+    /**
+     * @param string $method
+     * @param string|object $class
+     * @param \Closure(string $method):bool|null $verifier
+     * @return string|null
+     */
+    private static function parseMethod(string &$method, string|object $class, ?\Closure $verifier = null): ?string
     {
         $verifier ??= fn(string $method): bool => method_exists($class, $method);
         $composedMethod = null;
@@ -194,7 +236,12 @@ final class CallUtility
         return $composedMethod;
     }
 
-    public static function iterateMethodParts(string $method, string $delimiter = null): iterable
+    /**
+     * @param string $method
+     * @param string|null $delimiter
+     * @return \Traversable<int,string>
+     */
+    private static function iterateMethodParts(string $method, string $delimiter = null): \Traversable
     {
         $methodParts = preg_split('/(?=[A-Z])/', $method) ?: [];
 
@@ -217,14 +264,25 @@ final class CallUtility
         yield lcfirst($composedType);
     }
 
-    public static function ensureCallable(mixed $target, string $error = '%s is not callable.'): void
+    /**
+     * @param mixed $target
+     * @param string $error
+     * @phpstan-assert class-string|object $target
+     * @return void
+     */
+    private static function ensureCallable(mixed $target, string $error = '%s is not callable.'): void
     {
         if (!(is_object($target) || (is_string($target) && class_exists($target)))) {
             throw new \RuntimeException(sprintf($error, TypeUtility::typeToString($target)));
         }
     }
 
-    public static function ensureMethodExists(string $method, string|object $target): void
+    /**
+     * @param string $method
+     * @param class-string|object $target
+     * @return void
+     */
+    private static function ensureMethodExists(string $method, string|object $target): void
     {
         if (!(method_exists($target, $method) || self::isSupportMagicMethod($method, $target))) {
             throw new \RuntimeException(sprintf(
@@ -235,9 +293,14 @@ final class CallUtility
         }
     }
 
+    /**
+     * @param string $method
+     * @param class-string|object $target
+     * @return bool
+     */
     private static function isSupportMagicMethod(string $method, string|object $target): bool
     {
         return ($target instanceof MagicCallableInterface && $target->supportMagicCall($method))
-            || (is_a($target, MagicStaticCallableInterface::class) && $target::supportMagicStaticCall($method));
+            || (is_a($target, MagicStaticCallableInterface::class, true) && $target::supportMagicStaticCall($method));
     }
 }
