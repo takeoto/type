@@ -10,6 +10,8 @@ use Takeoto\Type\Utility\TypeUtility;
  * NOT types
  *
  * @method static mixed notEmpty(mixed $value, ?string $error = null)
+ * @method static mixed notFalse(mixed $value, ?string $error = null)
+ * @method static mixed notTrue(mixed $value, ?string $error = null)
  * @method static float|string|object|array|bool|callable|null|iterable notInt(mixed $value, ?string $error = null)
  * @method static int|string|object|array|bool|callable|null|iterable notFloat(mixed $value, ?string $error = null)
  * @method static int|float|object|array|bool|callable|null|iterable notString(mixed $value, ?string $error = null)
@@ -29,6 +31,8 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|bool nullOrBool(mixed $value, ?string $error = null)
  * @method static null|callable nullOrCallable(mixed $value, ?string $error = null)
  * @method static null|string nullOrStringInt(mixed $value, ?string $error = null)
+ * @method static null|iterable nullOrIterable(mixed $value, ?string $error = null)
+ * @method static null|string|int|float nullOrNumeric(mixed $value, ?string $error = null)
  * @method static int|string intOrStringInt(mixed $value, ?string $error = null)
  *
  * ArrayX a strict value getting
@@ -74,6 +78,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|object arrayXGetErrorIfNotNullOrObject(mixed[] $array, string $key, ?string $error = null)
  * @method static null|array arrayXGetErrorIfNotNullOrArray(mixed[] $array, string $key, ?string $error = null)
  * @method static null|bool arrayXGetErrorIfNotNullOrBool(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|Callable arrayXGetErrorIfNotNullOrCallable(mixed[] $array, string $key, ?string $error = null)
  * @method static null|string arrayXGetErrorIfNotNullOrStringInt(mixed[] $array, string $key, ?string $error = null)
  * @method static int|string arrayXGetErrorIfNotIntOrStringInt(mixed[] $array, string $key, ?string $error = null)
  */
