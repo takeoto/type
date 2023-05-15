@@ -253,7 +253,7 @@ final class CallUtility
      * @param string $method
      * @param string|object $target
      * @param mixed[] $arguments
-     * @return array
+     * @return mixed[]
      */
     private static function retrieveArguments(string $method, string|object $target, array &$arguments): array
     {

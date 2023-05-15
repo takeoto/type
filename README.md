@@ -47,7 +47,6 @@ Type::arrayXGetInt($array, 'key0');
 Type::arrayXGetErrorIfNotInt($array, 'key0', 'Yours custom error message!');
 
 # Multiple type
-Type::nullOrString('someValue');
 Type::arrayXGetNullOrString($array, 'key0')
 Type::arrayXGetErrorIfNotNullOrString($array, 'key0', 'Yours custom error message!');
 ```

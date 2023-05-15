@@ -147,23 +147,6 @@ class Type implements MagicStaticCallableInterface
         return ArrayX::new($value, $error);
     }
 
-    public static function arrayXSchema(): array
-    {
-        return [
-            'arguments' => [
-                0 => [
-                    'required' => true,
-                    'type' => 'mixed',
-                ],
-                1 => [
-                    'required' => false,
-                    'type' => 'string|null',
-                ],
-            ],
-            'return' => ArrayX::class,
-        ];
-    }
-
     /**
      * @param mixed $value
      * @param string|null $error
