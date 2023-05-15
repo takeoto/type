@@ -74,7 +74,8 @@ final class CallUtility
             throw new \RuntimeException(sprintf('The method "%s" does not exist.', $method));
         }
 
-        $target = CallUtility::call($targetMethod, $target, [array_shift($arguments)]);
+        $targetArguments = CallUtility::retrieveArguments($targetMethod, $target, $arguments);
+        $target = CallUtility::call($targetMethod, $target, $targetArguments);
 
         if ($method === '') {
             return $target;
@@ -87,46 +88,12 @@ final class CallUtility
 
     /**
      * @param string $method
-     * @param mixed[] $arguments
-     * @param class-string|object $target
-     * @param \Closure(string $method):bool|null $methodVerifier
-     * @return mixed
-     */
-    public static function callChain(
-        string $method,
-        array $arguments,
-        string|object $target,
-        \Closure $methodVerifier = null
-    ): mixed {
-        while (true) {
-            CallUtility::ensureCallable($target);
-            $targetMethod = CallUtility::parseMethod($method, $target, $methodVerifier);
-
-            if ($targetMethod === null) {
-                break;
-            }
-
-            $target = CallUtility::call($targetMethod, $target, [array_shift($arguments)]);
-        }
-
-        if ($method !== '') {
-            throw new \RuntimeException(sprintf('Method "%s" is not part of chain call.', $method));
-        }
-
-        return $target;
-    }
-
-    /**
-     * @param string $method
      * @param class-string|object $target
      * @param mixed[] $arguments
      * @return mixed
      */
     public static function call(string $method, string|object $target, array $arguments = []): mixed
     {
-        echo '$method > ' . var_export($method, true), PHP_EOL;
-        echo '$target > ' . var_export($target, true), PHP_EOL;
-        echo '$arguments > ' . var_export($arguments, true), PHP_EOL, PHP_EOL;
         self::ensureCallable($target);
         self::ensureMethodExists($method, $target);
 
@@ -175,43 +142,6 @@ final class CallUtility
         }
 
         return false;
-    }
-
-    /**
-     * @param string $method
-     * @param class-string|object $target
-     * @param \Closure(string $method, int $position, int $till):bool|null $methodVerifier
-     * @return bool
-     */
-    public static function isChainCall(string $method, string|object $target, \Closure $methodVerifier = null): bool
-    {
-        $methodVerifier ??= fn(string $method, int $position, int $till): bool => method_exists($target, $method);
-        $composedMethod = '';
-        $methodsExistPositions = [];
-        $methodParts = iterator_to_array(self::iterateMethodParts($method));
-
-        for ($position = 0, $till = count($methodParts) - 1; $position <= $till; $position++) {
-            $part = $methodParts[$position];
-            $composedMethod = $composedMethod === '' ? $part : $composedMethod . ucfirst($part);
-
-            if ($methodVerifier($composedMethod, $position, $till) === true) {
-                $methodsExistPositions[] = $position;
-                continue;
-            }
-
-            if ($position !== $till) {
-                continue;
-            }
-
-            $position = array_pop($methodsExistPositions);
-            $composedMethod = '';
-
-            if ($position === null) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -289,13 +219,23 @@ final class CallUtility
      */
     private static function ensureMethodExists(string $method, string|object $target): void
     {
-        if (!(method_exists($target, $method) || self::isSupportMagicMethod($method, $target))) {
+        if (!(self::isSupportMethod($target, $method))) {
             throw new \RuntimeException(sprintf(
                 'The method %s::%s does not exist.',
                 is_string($target) ? $target : get_class($target),
                 $method,
             ));
         }
+    }
+
+    /**
+     * @param object|class-string $target
+     * @param string $method
+     * @return bool
+     */
+    public static function isSupportMethod(object|string $target, string $method): bool
+    {
+        return method_exists($target, $method) || self::isSupportMagicMethod($method, $target);
     }
 
     /**
@@ -307,5 +247,16 @@ final class CallUtility
     {
         return ($target instanceof MagicCallableInterface && $target->supportMagicCall($method))
             || (is_a($target, MagicStaticCallableInterface::class, true) && $target::supportMagicStaticCall($method));
+    }
+
+    /**
+     * @param string $method
+     * @param string|object $target
+     * @param mixed[] $arguments
+     * @return array
+     */
+    private static function retrieveArguments(string $method, string|object $target, array &$arguments): array
+    {
+        return [array_shift($arguments)];
     }
 }

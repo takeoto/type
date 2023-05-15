@@ -10,6 +10,22 @@ use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
 
 /**
+ * NOT types
+ *
+ * @method static mixed notEmpty()
+ * @method static mixed notFalse()
+ * @method static mixed notTrue()
+ * @method static float|string|object|array|bool|callable|null|iterable notInt()
+ * @method static int|string|object|array|bool|callable|null|iterable notFloat()
+ * @method static int|float|object|array|bool|callable|null|iterable notString()
+ * @method static int|float|string|array|bool|callable|null|iterable notObject()
+ * @method static int|float|string|object|bool|callable|null|iterable notArray()
+ * @method static int|float|string|object|array|callable|null|iterable notBool()
+ * @method static int|float|string|object|array|bool|null|iterable notCallable()
+ * @method static int|float|string|object|array|bool|callable|iterable notNull()
+ *
+ * Multiple types
+ *
  * @method static null|int nullOrInt()
  * @method static null|float nullOrFloat()
  * @method static null|string nullOrString()
@@ -17,6 +33,10 @@ use Takeoto\Type\Utility\CallUtility;
  * @method static null|array nullOrArray()
  * @method static null|bool nullOrBool()
  * @method static null|callable nullOrCallable()
+ * @method static null|string nullOrStringInt()
+ * @method static null|iterable nullOrIterable()
+ * @method static null|string|int|float nullOrNumeric()
+ * @method static int|string intOrStringInt()
  */
 class MixedX implements MixedXInterface, MagicCallableInterface
 {
@@ -173,10 +193,7 @@ class MixedX implements MixedXInterface, MagicCallableInterface
      */
     public function supportMagicCall(string $method): bool
     {
-        return CallUtility::isChainCall($method, $this,
-            fn(string $method, int $step, int $steps) => method_exists($this, $method)
-                || ($step === $steps && CallUtility::isStrictTypeCall($method))
-        );
+        return CallUtility::isStrictTypeCall($method) || CallUtility::isTransitCall($method, $this, fn(string $method) => $method === 'errorIfNot');
     }
 
     /**
@@ -192,8 +209,6 @@ class MixedX implements MixedXInterface, MagicCallableInterface
             return CallUtility::strictTypeCall($method, [$this->value, $this->customErrorMessage]);
         }
 
-        return CallUtility::callChain($method, $arguments, $this, fn(string $m) => method_exists($this, $m)
-            || CallUtility::isStrictTypeCall($m)
-        );
+        return CallUtility::callTransit($method, $arguments, $this);
     }
 }

@@ -92,7 +92,7 @@ trait CustomTypesTrait
      */
     public static function stringInt(mixed $value, string $error = null): string
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_STRING_INT, $error ?? 'Expected an int as a string. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_STRING_INT, $error);
 
         /** @var string $value */
         return $value;
@@ -106,7 +106,7 @@ trait CustomTypesTrait
      */
     public static function empty(mixed $value, string $error = null): mixed
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_EMPTY, $error ?? 'Expected an int as an empty. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_EMPTY, $error);
 
         return $value;
     }

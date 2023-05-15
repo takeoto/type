@@ -18,7 +18,7 @@ trait PseudoTypesTrait
      */
     public static function iterable(mixed $value, string $error = null): iterable
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_ITERABLE, $error ?? 'Expected an iterable. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_ITERABLE, $error);
 
         /** @var iterable<array-key,mixed> $value */
         return $value;
@@ -33,7 +33,7 @@ trait PseudoTypesTrait
      */
     public static function numeric(mixed $value, string $error = null): string|int|float
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_NUMERIC, $error ?? 'Expected a numeric. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_NUMERIC, $error);
 
         /** @var string|int|float $value */
         return $value;
@@ -48,7 +48,7 @@ trait PseudoTypesTrait
      */
     public static function true(mixed $value, string $error = null): bool
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_TRUE, $error ?? 'Expected a true. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_TRUE, $error);
 
         /** @var true $value */
         return $value;
@@ -63,7 +63,7 @@ trait PseudoTypesTrait
      */
     public static function false(mixed $value, string $error = null): bool
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_FALSE, $error ?? 'Expected a false. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_FALSE, $error);
 
         /** @var false $value */
         return $value;

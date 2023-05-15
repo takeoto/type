@@ -23,7 +23,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function int(mixed $value, string $error = null): int
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_INT, $error ?? 'Expected an integer. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_INT, $error);
 
         /** @var int $value */
         return $value;
@@ -37,7 +37,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function float(mixed $value, string $error = null): float
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_FLOAT, $error ?? 'Expected a float. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_FLOAT, $error);
 
         /** @var float $value */
         return $value;
@@ -51,7 +51,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function string(mixed $value, string $error = null): string
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_STRING, $error ?? 'Expected a string. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_STRING, $error);
 
         /** @var string $value */
         return $value;
@@ -66,7 +66,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function object(mixed $value, string $error = null): object
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_OBJECT, $error ?? 'Expected an object. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_OBJECT, $error);
 
         /** @var object $value */
         return $value;
@@ -80,7 +80,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function array(mixed $value, string $error = null): array
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_ARRAY, $error ?? 'Expected an array. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_ARRAY, $error);
 
         /** @var mixed[] $value */
         return $value;
@@ -94,7 +94,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function bool(mixed $value, string $error = null): bool
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_BOOL, $error ?? 'Expected a boolean. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_BOOL, $error);
 
         /** @var bool $value */
         return $value;
@@ -108,7 +108,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function callable(mixed $value, string $error = null): callable
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_CALLABLE, $error ?? 'Expected a callable. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_CALLABLE, $error);
 
         /** @var callable $value */
         return $value;
@@ -122,7 +122,7 @@ class Type implements MagicStaticCallableInterface
      */
     public static function null(mixed $value, string $error = null)
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_NULL, $error ?? 'Expected a null. Got: %s');
+        TypeUtility::ensure($value, TypeUtility::TYPE_NULL, $error);
 
         return null;
     }
@@ -145,6 +145,23 @@ class Type implements MagicStaticCallableInterface
     public static function arrayX(mixed $value, string $error = null): ArrayX
     {
         return ArrayX::new($value, $error);
+    }
+
+    public static function arrayXSchema(): array
+    {
+        return [
+            'arguments' => [
+                0 => [
+                    'required' => true,
+                    'type' => 'mixed',
+                ],
+                1 => [
+                    'required' => false,
+                    'type' => 'string|null',
+                ],
+            ],
+            'return' => ArrayX::class,
+        ];
     }
 
     /**
