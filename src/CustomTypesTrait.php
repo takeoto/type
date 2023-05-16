@@ -47,6 +47,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static callable arrayXGetCallable(mixed[] $array, string $key)
  * @method static mixed arrayXGetMixed(mixed[] $array, string $key)
  * @method static null arrayXGetNull(mixed[] $array, string $key)
+ * @method static int|string arrayXGetIntOrStringInt(mixed[] $array, string $key)
  *
  * ArrayX a multiple type strict value getting
  *
@@ -57,6 +58,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|array arrayXGetNullOrArray(mixed[] $array, string $key)
  * @method static null|bool arrayXGetNullOrBool(mixed[] $array, string $key)
  * @method static null|callable arrayXGetNullOrCallable(mixed[] $array, string $key)
+ * @method static null|int|string arrayXGetNullOrIntOrStringInt(mixed[] $array, string $key)
  *
  * ArrayX a strict value getting (with a custom error message)
  *
@@ -81,6 +83,7 @@ use Takeoto\Type\Utility\TypeUtility;
  * @method static null|Callable arrayXGetErrorIfNotNullOrCallable(mixed[] $array, string $key, ?string $error = null)
  * @method static null|string arrayXGetErrorIfNotNullOrStringInt(mixed[] $array, string $key, ?string $error = null)
  * @method static int|string arrayXGetErrorIfNotIntOrStringInt(mixed[] $array, string $key, ?string $error = null)
+ * @method static null|int|string arrayXGetErrorIfNotNullOrIntOrStringInt(mixed[] $arr, string $k, ?string $err = null)
  */
 trait CustomTypesTrait
 {

@@ -161,7 +161,7 @@ class Type implements MagicStaticCallableInterface
     /**
      * @return string[]
      */
-    private static function getTransitMethods(): array
+    protected static function getTransitMethods(): array
     {
         return ['arrayX', 'objectX'];
     }
