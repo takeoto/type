@@ -7,6 +7,7 @@ namespace Takeoto\Type\Utility;
 use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Contract\MagicStaticCallableInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
+use Takeoto\Type\Dictionary\SchemeDict;
 
 /**
  * @internal
@@ -37,11 +38,11 @@ final class CallUtility
 
         $types = [];
 
-        foreach (self::iterateMethodParts($method, 'Or') as $type) {
-            $types[$type] = $type;
+        foreach (self::iterateMethodTypes($method) as $fullType => ['type' => $type, 'isNegative' => $isNegative]) {
+            $types[] = $fullType;
 
-            if ($isNegative = str_starts_with($type, 'not')) {
-                $type = lcfirst(substr($type, 3));
+            if ($type === null) {
+                throw new \Exception(sprintf('Unknown type %s', $fullType));
             }
 
             if (TypeUtility::verifyType($value, $type) xor $isNegative) {
@@ -72,8 +73,8 @@ final class CallUtility
 
         $argsToMethodScheme = self::getTransitMethodsArguments($method, $target, $arguments);
         $argsToMethodScheme = reset($argsToMethodScheme);
-        $targetMethod = $argsToMethodScheme['method'];
-        $targetArguments = $argsToMethodScheme['arguments'];
+        $targetMethod = $argsToMethodScheme[SchemeDict::METHOD];
+        $targetArguments = $argsToMethodScheme[SchemeDict::ARGUMENTS];
 
         if ($targetMethod === null) {
             throw new \RuntimeException(sprintf('The method "%s" does not exist.', $method));
@@ -88,7 +89,7 @@ final class CallUtility
 
         self::ensureCallable($target);
 
-        return self::call($method, $target, array_slice($arguments, 0, count($targetArguments)));
+        return self::call($method, $target, array_slice($arguments, count($targetArguments)));
     }
 
     /**
@@ -114,12 +115,8 @@ final class CallUtility
      */
     public static function isStrictTypeCall(string $method): bool
     {
-        foreach (self::iterateMethodParts($method, 'Or') as $type) {
-            if (str_starts_with($type, 'not')) {
-                $type = lcfirst(substr($type, 3));
-            }
-
-            if ($type === '' || !TypeUtility::hasType($type)) {
+        foreach (self::iterateMethodTypes($method) as ['type' => $type]) {
+            if (null === $type) {
                 return false;
             }
         }
@@ -246,18 +243,15 @@ final class CallUtility
                 ));
             }
 
-            foreach ($args = $scheme['arguments'] ?? [] as $schemeArgument) {
+            foreach ($scheme[SchemeDict::ARGUMENTS] as $schemeArgument) {
                 $preparedArgsCount++;
 
-                if (!array_key_exists('default', $schemeArgument)) {
+                if (!array_key_exists(SchemeDict::DEFAULT, $schemeArgument)) {
                     $preparedReqArgsCount++;
                 }
             }
 
-            $preparedArgs[] = [
-                'method' => $schemeMethod,
-                'arguments' => $args,
-            ];
+            $preparedArgs[] = $scheme;
         }
 
         if ($preparedReqArgsCount > count($arguments)) {
@@ -273,27 +267,35 @@ final class CallUtility
             ));
         }
 
-
         foreach ($preparedArgs as &$methodArgs) {
-            foreach ($methodArgs['arguments'] as &$arg) {
-                $isRequired = !array_key_exists('default', $arg);
+            foreach ($methodArgs[SchemeDict::ARGUMENTS] as &$arg) {
+                $isRequired = !array_key_exists(SchemeDict::DEFAULT, $arg);
 
                 if ($isRequired || $argumentsCount > $preparedReqArgsCount) {
                     $argValue = array_shift($arguments);
-                    TypeUtility::ensure($argValue, $arg['type']);
+                    TypeUtility::ensure($argValue, $arg[SchemeDict::TYPE]);
                     $arg = $argValue;
                     $argumentsCount--;
                     $preparedReqArgsCount -= (int)$isRequired;
                     continue;
                 }
 
-                $arg = $arg['default'];
+                $arg = $arg[SchemeDict::DEFAULT];
             }
         }
 
         return $preparedArgs;
     }
 
+    /**
+     * @param string $method
+     * @param string $class
+     * @return array{
+     *     method: string,
+     *     arguments: array<string|int,array{default?: mixed, type: string}>,
+     *     return: string,
+     * }|null
+     */
     public static function getSelfMethodSchema(string $method, string $class): ?array
     {
         if (!method_exists($class, $schemeMethod = $method . 'Scheme')) {
@@ -302,7 +304,41 @@ final class CallUtility
 
         $scheme = call_user_func([$class, $schemeMethod]);
 
-        return $scheme;
+        switch (false) {
+            case isset($scheme[SchemeDict::ARGUMENTS]):
+                throw new \LogicException(sprintf('The arguments option of "%s" a method scheme is missing.', $method));
+            case is_array($scheme[SchemeDict::ARGUMENTS]):
+                throw new \LogicException(sprintf('The return option of "%s" a method should be an array.', $method));
+            case array_filter($scheme[SchemeDict::ARGUMENTS], fn($v) => is_string($v)
+                || is_string($v[SchemeDict::TYPE] ?? null)):
+                throw new \LogicException(sprintf('The arguments option of "%s" a method is not correct.', $method));
+            case isset($scheme[SchemeDict::RETURN]):
+                throw new \LogicException(sprintf('The return option of "%s" a method scheme is missing.', $method));
+            case is_string($scheme[SchemeDict::RETURN]):
+                throw new \LogicException(sprintf('The return option of "%s" a method should be a string.', $method));
+        }
+
+        return [
+            SchemeDict::METHOD => $method,
+            SchemeDict::ARGUMENTS => $scheme[SchemeDict::ARGUMENTS],
+            SchemeDict::RETURN => $scheme[SchemeDict::RETURN],
+        ];
+    }
+
+    /**
+     * @param string $method
+     * @return \Traversable<string,array{type: string|null, isNegative: bool}>
+     */
+    public static function iterateMethodTypes(string $method): \Traversable
+    {
+        foreach (self::iterateMethodParts($method, 'Or') as $fullType) {
+            $type = str_starts_with($fullType, 'not') ? lcfirst(substr($fullType, 3)) : $fullType;
+
+            yield $fullType => [
+                'type' => $type === '' || !TypeUtility::hasType($type) ? null : $type,
+                'isNegative' => $fullType !== $type,
+            ];
+        }
     }
 
     /**
@@ -321,7 +357,7 @@ final class CallUtility
             }
 
             yield $targetMethod => $scheme = $target::getTransitMethodScheme($targetMethod);
-            $target = $scheme['return'] ?? null;
+            $target = $scheme[SchemeDict::RETURN] ?? null;
         }
 
         if ($method !== '') {

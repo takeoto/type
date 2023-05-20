@@ -4,47 +4,30 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Utility;
 
+use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Exception\WrongTypeException;
 
 class TypeUtility
 {
-    # base
-    public const TYPE_BOOL = 'bool';
-    public const TYPE_INT = 'int';
-    public const TYPE_FLOAT = 'float';
-    public const TYPE_STRING = 'string';
-    public const TYPE_ARRAY = 'array';
-    public const TYPE_OBJECT = 'object';
-    public const TYPE_NULL = 'null';
-    public const TYPE_CALLABLE = 'callable';
-    public const TYPE_MIXED = 'mixed';
-    # pseudo
-    public const TYPE_ITERABLE = 'iterable';
-    public const TYPE_NUMERIC = 'numeric';
-    public const TYPE_TRUE = 'true';
-    public const TYPE_FALSE = 'false';
-    # custom
-    public const TYPE_STRING_INT = 'stringInt';
-    public const TYPE_EMPTY = 'empty';
     public const TYPES_VERIFIERS = [
         # base
-        self::TYPE_MIXED => [self::class, 'isMixed'],
-        self::TYPE_BOOL => 'is_bool',
-        self::TYPE_INT => 'is_int',
-        self::TYPE_FLOAT => 'is_float',
-        self::TYPE_STRING => 'is_string',
-        self::TYPE_ARRAY => 'is_array',
-        self::TYPE_OBJECT => 'is_object',
-        self::TYPE_NULL => 'is_null',
-        self::TYPE_CALLABLE => 'is_callable',
+        TypeDict::MIXED => [self::class, 'isMixed'],
+        TypeDict::BOOL => 'is_bool',
+        TypeDict::INT => 'is_int',
+        TypeDict::FLOAT => 'is_float',
+        TypeDict::STRING => 'is_string',
+        TypeDict::ARRAY => 'is_array',
+        TypeDict::OBJECT => 'is_object',
+        TypeDict::NULL => 'is_null',
+        TypeDict::CALLABLE => 'is_callable',
         # system
-        self::TYPE_ITERABLE => 'is_iterable',
-        self::TYPE_NUMERIC => 'is_numeric',
-        self::TYPE_TRUE => [self::class, 'isTrue'],
-        self::TYPE_FALSE => [self::class, 'isFalse'],
+        TypeDict::ITERABLE => 'is_iterable',
+        TypeDict::NUMERIC => 'is_numeric',
+        TypeDict::TRUE => [self::class, 'isTrue'],
+        TypeDict::FALSE => [self::class, 'isFalse'],
         # custom
-        self::TYPE_STRING_INT => [self::class, 'isStringInt'],
-        self::TYPE_EMPTY => 'empty',
+        TypeDict::STRING_INT => [self::class, 'isStringInt'],
+        TypeDict::EMPTY => 'empty',
     ];
 
     public static function isTrue(mixed $value): bool
@@ -123,6 +106,11 @@ class TypeUtility
     public static function normalizeType(string $type): array
     {
         return explode('|', $type);
+    }
+
+    public static function oneOf(string ...$types): string
+    {
+        return implode('|', $types);
     }
 
     /**

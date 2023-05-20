@@ -2,6 +2,7 @@
 
 namespace Takeoto\Type;
 
+use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Utility\TypeUtility;
 
 /**
@@ -18,7 +19,7 @@ trait PseudoTypesTrait
      */
     public static function iterable(mixed $value, string $error = null): iterable
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_ITERABLE, $error);
+        TypeUtility::ensure($value, TypeDict::ITERABLE, $error);
 
         /** @var iterable<array-key,mixed> $value */
         return $value;
@@ -33,7 +34,7 @@ trait PseudoTypesTrait
      */
     public static function numeric(mixed $value, string $error = null): string|int|float
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_NUMERIC, $error);
+        TypeUtility::ensure($value, TypeDict::NUMERIC, $error);
 
         /** @var string|int|float $value */
         return $value;
@@ -48,7 +49,7 @@ trait PseudoTypesTrait
      */
     public static function true(mixed $value, string $error = null): bool
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_TRUE, $error);
+        TypeUtility::ensure($value, TypeDict::TRUE, $error);
 
         /** @var true $value */
         return $value;
@@ -63,7 +64,7 @@ trait PseudoTypesTrait
      */
     public static function false(mixed $value, string $error = null): bool
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_FALSE, $error);
+        TypeUtility::ensure($value, TypeDict::FALSE, $error);
 
         /** @var false $value */
         return $value;

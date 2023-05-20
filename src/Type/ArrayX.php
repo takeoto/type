@@ -7,9 +7,12 @@ namespace Takeoto\Type\Type;
 use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Contract\TypeX\ArrayXInterface;
 use Takeoto\Type\Contract\MagicCallableInterface;
+use Takeoto\Type\Dictionary\SchemeDict;
+use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Exception\ArrayXKeyNotFoundException;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
+use Takeoto\Type\Utility\TypeUtility;
 
 /**
  * @template TKey of array-key
@@ -57,15 +60,20 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface, TransitionalInt
         return MixedX::new($this->array[$key]);
     }
 
+    /**
+     * The scheme for self::get.
+     *
+     * @return mixed[]
+     */
     public static function getScheme(): array
     {
         return [
-            'arguments' => [
-                0 => [
-                    'type' => 'int|string',
+            SchemeDict::ARGUMENTS => [
+                [
+                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::INT),
                 ],
             ],
-            'return' => MixedX::class,
+            SchemeDict::RETURN => MixedX::class,
         ];
     }
 

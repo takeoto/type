@@ -6,9 +6,12 @@ namespace Takeoto\Type;
 
 use Takeoto\Type\Contract\MagicStaticCallableInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
+use Takeoto\Type\Dictionary\SchemeDict;
+use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
+use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
 class Type implements MagicStaticCallableInterface, TransitionalInterface
@@ -24,7 +27,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function int(mixed $value, string $error = null): int
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_INT, $error);
+        TypeUtility::ensure($value, TypeDict::INT, $error);
 
         /** @var int $value */
         return $value;
@@ -38,7 +41,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function float(mixed $value, string $error = null): float
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_FLOAT, $error);
+        TypeUtility::ensure($value, TypeDict::FLOAT, $error);
 
         /** @var float $value */
         return $value;
@@ -52,7 +55,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function string(mixed $value, string $error = null): string
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_STRING, $error);
+        TypeUtility::ensure($value, TypeDict::STRING, $error);
 
         /** @var string $value */
         return $value;
@@ -67,7 +70,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function object(mixed $value, string $error = null): object
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_OBJECT, $error);
+        TypeUtility::ensure($value, TypeDict::OBJECT, $error);
 
         /** @var object $value */
         return $value;
@@ -81,7 +84,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function array(mixed $value, string $error = null): array
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_ARRAY, $error);
+        TypeUtility::ensure($value, TypeDict::ARRAY, $error);
 
         /** @var mixed[] $value */
         return $value;
@@ -95,7 +98,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function bool(mixed $value, string $error = null): bool
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_BOOL, $error);
+        TypeUtility::ensure($value, TypeDict::BOOL, $error);
 
         /** @var bool $value */
         return $value;
@@ -109,7 +112,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function callable(mixed $value, string $error = null): callable
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_CALLABLE, $error);
+        TypeUtility::ensure($value, TypeDict::CALLABLE, $error);
 
         /** @var callable $value */
         return $value;
@@ -123,7 +126,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
      */
     public static function null(mixed $value, string $error = null)
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_NULL, $error);
+        TypeUtility::ensure($value, TypeDict::NULL, $error);
 
         return null;
     }
@@ -148,19 +151,24 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
         return ArrayX::new($value, $error);
     }
 
+    /**
+     * The scheme for self::arrayX
+     *
+     * @return mixed[]
+     */
     public static function arrayXScheme(): array
     {
         return [
-            'arguments' => [
-                'value' => [
-                    'type' => 'mixed',
+            SchemeDict::ARGUMENTS => [
+                [
+                    SchemeDict::TYPE => TypeDict::MIXED,
                 ],
-                'error' => [
-                    'type' => 'string|null',
-                    'default' => null,
+                [
+                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::NULL),
+                    SchemeDict::DEFAULT => null,
                 ],
             ],
-            'return' => ArrayX::class,
+            SchemeDict::RETURN => ArrayX::class,
         ];
     }
 
@@ -173,6 +181,27 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
     public static function objectX(mixed $value, string $error = null): ObjectX
     {
         return ObjectX::new($value, $error);
+    }
+
+    /**
+     * The scheme for self::objectX
+     *
+     * @return mixed[]
+     */
+    public static function objectXScheme(): array
+    {
+        return [
+            SchemeDict::ARGUMENTS => [
+                [
+                    SchemeDict::TYPE => TypeDict::MIXED,
+                ],
+                [
+                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::NULL),
+                    SchemeDict::DEFAULT => null,
+                ],
+            ],
+            SchemeDict::RETURN => ObjectX::class,
+        ];
     }
 
     private function __construct()

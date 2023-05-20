@@ -7,8 +7,11 @@ namespace Takeoto\Type\Type;
 use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Contract\TypeX\MixedXInterface;
+use Takeoto\Type\Dictionary\SchemeDict;
+use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
+use Takeoto\Type\Utility\TypeUtility;
 
 /**
  * NOT types
@@ -189,15 +192,20 @@ class MixedX implements MixedXInterface, MagicCallableInterface, TransitionalInt
         return $this;
     }
 
+    /**
+     * The scheme for self::errorIfNot.
+     *
+     * @return mixed[]
+     */
     public static function errorIfNotScheme(): array
     {
         return [
-            'arguments' => [
-                0 => [
-                    'type' => 'string|null',
+            SchemeDict::ARGUMENTS => [
+                [
+                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::NULL),
                 ],
             ],
-            'return' => static::class,
+            SchemeDict::RETURN => static::class,
         ];
     }
 
@@ -237,7 +245,11 @@ class MixedX implements MixedXInterface, MagicCallableInterface, TransitionalInt
     public static function getTransitMethodScheme(string $method): ?array
     {
         return CallUtility::isStrictTypeCall($method) ? [
-            'arguments' => [],
+            SchemeDict::ARGUMENTS => [],
+            SchemeDict::RETURN => TypeUtility::oneOf(...array_column(
+                iterator_to_array(CallUtility::iterateMethodTypes($method)),
+                'type',
+            )),
         ] : CallUtility::getSelfMethodSchema($method, static::class);
     }
 }

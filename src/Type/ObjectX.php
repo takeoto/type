@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\TypeX\ObjectXInterface;
+use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Utility\TypeUtility;
 
 class ObjectX implements ObjectXInterface
@@ -18,7 +19,7 @@ class ObjectX implements ObjectXInterface
      */
     public function __construct(mixed $object, string $errorMessage = null)
     {
-        TypeUtility::ensure($object, TypeUtility::TYPE_OBJECT, $errorMessage);
+        TypeUtility::ensure($object, TypeDict::OBJECT, $errorMessage);
         /** @var object $object */
         $this->object = $object;
     }

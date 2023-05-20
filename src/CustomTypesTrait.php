@@ -2,6 +2,7 @@
 
 namespace Takeoto\Type;
 
+use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
@@ -95,7 +96,7 @@ trait CustomTypesTrait
      */
     public static function stringInt(mixed $value, string $error = null): string
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_STRING_INT, $error);
+        TypeUtility::ensure($value, TypeDict::STRING_INT, $error);
 
         /** @var string $value */
         return $value;
@@ -109,21 +110,21 @@ trait CustomTypesTrait
      */
     public static function empty(mixed $value, string $error = null): mixed
     {
-        TypeUtility::ensure($value, TypeUtility::TYPE_EMPTY, $error);
+        TypeUtility::ensure($value, TypeDict::EMPTY, $error);
 
         return $value;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function supportMagicStaticCall(string $method): bool
     {
         return CallUtility::isStrictTypeCall($method) || CallUtility::isTransitCall($method, static::class);
     }
 
     /**
-     * @param string $method
-     * @param mixed[] $arguments
-     * @return mixed
-     * @throws \Throwable
+     * @inheritDoc
      */
     public static function __callStatic(string $method, array $arguments): mixed
     {
@@ -138,6 +139,9 @@ trait CustomTypesTrait
         return CallUtility::callTransit($method, $arguments, self::class);
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function parseTransitMethod(string $method): ?string
     {
         return CallUtility::parseMethod(
@@ -147,6 +151,9 @@ trait CustomTypesTrait
         );
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTransitMethodScheme(string $method): ?array
     {
         return CallUtility::getSelfMethodSchema($method, static::class);
