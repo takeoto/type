@@ -6,6 +6,7 @@ namespace Takeoto\Type\Utility;
 
 use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Contract\MagicStaticCallableInterface;
+use Takeoto\Type\Contract\TransitionalInterface;
 
 /**
  * @internal
@@ -59,31 +60,35 @@ final class CallUtility
      * @param string $method
      * @param mixed[] $arguments
      * @param class-string|object $target
-     * @param \Closure(string $method):bool|null $methodVerifier
      * @return mixed
+     * @throws \Throwable
      */
     public static function callTransit(
         string $method,
         array $arguments,
-        string|object $target,
-        \Closure $methodVerifier = null
+        string|object $target
     ): mixed {
-        $targetMethod = CallUtility::parseMethod($method, $target, $methodVerifier);
+        self::ensureTransitional($target);
+
+        $argsToMethodScheme = self::getTransitMethodsArguments($method, $target, $arguments);
+        $argsToMethodScheme = reset($argsToMethodScheme);
+        $targetMethod = $argsToMethodScheme['method'];
+        $targetArguments = $argsToMethodScheme['arguments'];
 
         if ($targetMethod === null) {
             throw new \RuntimeException(sprintf('The method "%s" does not exist.', $method));
         }
 
-        $targetArguments = CallUtility::retrieveArguments($targetMethod, $target, $arguments);
-        $target = CallUtility::call($targetMethod, $target, $targetArguments);
+        $target = self::call($targetMethod, $target, $targetArguments);
+        $method = self::cutOffMethod($method, $targetMethod);
 
         if ($method === '') {
             return $target;
         }
 
-        CallUtility::ensureCallable($target);
+        self::ensureCallable($target);
 
-        return CallUtility::call($method, $target, $arguments);
+        return self::call($method, $target, array_slice($arguments, 0, count($targetArguments)));
     }
 
     /**
@@ -100,7 +105,7 @@ final class CallUtility
         /** @var callable $callable */
         $callable = [$target, $method];
 
-        return call_user_func($callable, ...$arguments);
+        return call_user_func_array($callable, $arguments);
     }
 
     /**
@@ -125,18 +130,18 @@ final class CallUtility
     /**
      * @param string $method
      * @param class-string|object $target
-     * @param \Closure(string $method):bool|null $methodVerifier
      * @return bool
      */
-    public static function isTransitCall(string $method, string|object $target, \Closure $methodVerifier = null): bool
+    public static function isTransitCall(string $method, string|object $target): bool
     {
-        $methodVerifier ??= fn(string $method): bool => method_exists($target, $method);
+        self::ensureTransitional($target);
+
         $composedMethod = null;
 
         foreach (self::iterateMethodParts($method) as $method) {
             $composedMethod = $composedMethod === null ? $method : $composedMethod . ucfirst($method);
 
-            if ($methodVerifier($composedMethod)) {
+            if ($target::parseTransitMethod($composedMethod) !== null) {
                 return true;
             }
         }
@@ -150,7 +155,7 @@ final class CallUtility
      * @param \Closure(string $method):bool|null $verifier
      * @return string|null
      */
-    private static function parseMethod(string &$method, string|object $class, ?\Closure $verifier = null): ?string
+    public static function parseMethod(string $method, string|object $class, ?\Closure $verifier = null): ?string
     {
         $verifier ??= fn(string $method): bool => method_exists($class, $method);
         $composedMethod = null;
@@ -165,8 +170,6 @@ final class CallUtility
 
             $composedMethod = $composedMethodDraft;
         }
-
-        $method = lcfirst(substr($method, strlen($composedMethod ?? '')) ?: '');
 
         return $composedMethod;
     }
@@ -200,35 +203,6 @@ final class CallUtility
     }
 
     /**
-     * @param mixed $target
-     * @param string $error
-     * @phpstan-assert class-string|object $target
-     * @return void
-     */
-    private static function ensureCallable(mixed $target, string $error = '%s is not callable.'): void
-    {
-        if (!(is_object($target) || (is_string($target) && class_exists($target)))) {
-            throw new \RuntimeException(sprintf($error, TypeUtility::typeToString($target)));
-        }
-    }
-
-    /**
-     * @param string $method
-     * @param class-string|object $target
-     * @return void
-     */
-    private static function ensureMethodExists(string $method, string|object $target): void
-    {
-        if (!(self::isSupportMethod($target, $method))) {
-            throw new \RuntimeException(sprintf(
-                'The method %s::%s does not exist.',
-                is_string($target) ? $target : get_class($target),
-                $method,
-            ));
-        }
-    }
-
-    /**
      * @param object|class-string $target
      * @param string $method
      * @return bool
@@ -254,9 +228,167 @@ final class CallUtility
      * @param string|object $target
      * @param mixed[] $arguments
      * @return mixed[]
+     * @throws \Throwable
      */
-    private static function retrieveArguments(string $method, string|object $target, array &$arguments): array
+    private static function getTransitMethodsArguments(string $method, string|object $target, array $arguments): array
     {
-        return [array_shift($arguments)];
+        $argumentsCount = count($arguments);
+        $preparedReqArgsCount = 0;
+        $preparedArgsCount = 0;
+        $preparedArgs = [];
+
+        foreach (self::iterateMethodsSchemas($method, $target) as $schemeMethod => $scheme) {
+            if ($scheme === null) {
+                throw new \RuntimeException(sprintf(
+                    'Arguments schemas for "%s" in "%s" method does not exists!',
+                    $schemeMethod,
+                    $method,
+                ));
+            }
+
+            foreach ($args = $scheme['arguments'] ?? [] as $schemeArgument) {
+                $preparedArgsCount++;
+
+                if (!array_key_exists('default', $schemeArgument)) {
+                    $preparedReqArgsCount++;
+                }
+            }
+
+            $preparedArgs[] = [
+                'method' => $schemeMethod,
+                'arguments' => $args,
+            ];
+        }
+
+        if ($preparedReqArgsCount > count($arguments)) {
+            throw new \RuntimeException(sprintf('Required arguments of "%s" method more than given!', $method));
+        }
+
+        if ($argumentsCount > $preparedArgsCount) {
+            throw new \RuntimeException(sprintf(
+                'Arguments count of "%s" method %d, %d given!',
+                $method,
+                $preparedArgsCount,
+                $argumentsCount,
+            ));
+        }
+
+
+        foreach ($preparedArgs as &$methodArgs) {
+            foreach ($methodArgs['arguments'] as &$arg) {
+                $isRequired = !array_key_exists('default', $arg);
+
+                if ($isRequired || $argumentsCount > $preparedReqArgsCount) {
+                    $argValue = array_shift($arguments);
+                    TypeUtility::ensure($argValue, $arg['type']);
+                    $arg = $argValue;
+                    $argumentsCount--;
+                    $preparedReqArgsCount -= (int)$isRequired;
+                    continue;
+                }
+
+                $arg = $arg['default'];
+            }
+        }
+
+        return $preparedArgs;
+    }
+
+    public static function getSelfMethodSchema(string $method, string $class): ?array
+    {
+        if (!method_exists($class, $schemeMethod = $method . 'Scheme')) {
+            return null;
+        }
+
+        $scheme = call_user_func([$class, $schemeMethod]);
+
+        return $scheme;
+    }
+
+    /**
+     * @param string $method
+     * @param class-string|object $target
+     * @return iterable
+     */
+    private static function iterateMethodsSchemas(string $method, string|object $target): iterable
+    {
+        while ($method) {
+            self::ensureTransitional($target);
+            $targetMethod = self::shiftTransitMethod($method, $target);
+
+            if ($targetMethod === null) {
+                break;
+            }
+
+            yield $targetMethod => $scheme = $target::getTransitMethodScheme($targetMethod);
+            $target = $scheme['return'] ?? null;
+        }
+
+        if ($method !== '') {
+            yield $method => null;
+        }
+    }
+
+    /**
+     * @param string $method
+     * @param class-string|object $target
+     * @return string|null
+     */
+    private static function shiftTransitMethod(string &$method, string|object $target): ?string
+    {
+        self::ensureTransitional($target);
+
+        $targetMethod = $target::parseTransitMethod($method);
+        $method = self::cutOffMethod($method, $targetMethod ?? '');
+
+        return $targetMethod;
+    }
+
+    private static function cutOffMethod(string $fullMethod, string $subMethod): string
+    {
+        return lcfirst(substr($fullMethod, strlen($subMethod)) ?: '');
+    }
+
+    /**
+     * @param mixed $target
+     * @phpstan-assert class-string|object $target
+     * @return void
+     */
+    private static function ensureCallable(mixed $target): void
+    {
+        if (!(is_object($target) || (is_string($target) && class_exists($target)))) {
+            throw new \LogicException(sprintf('%s is not callable.', TypeUtility::typeToString($target)));
+        }
+    }
+
+    /**
+     * @param string $method
+     * @param class-string|object $target
+     * @return void
+     */
+    private static function ensureMethodExists(string $method, string|object $target): void
+    {
+        if (!(self::isSupportMethod($target, $method))) {
+            throw new \LogicException(sprintf(
+                'The method %s::%s does not exist.',
+                is_string($target) ? $target : get_class($target),
+                $method,
+            ));
+        }
+    }
+
+    /**
+     * @param object|class-string $target
+     * @phpstan-assert TransitionalInterface $target
+     * @return void
+     */
+    private static function ensureTransitional(object|string $target): void
+    {
+        if (!is_subclass_of($target, TransitionalInterface::class)) {
+            throw new \LogicException(sprintf(
+                'The value should be an instance of "%s"!',
+                TransitionalInterface::class,
+            ));
+        }
     }
 }

@@ -17,6 +17,7 @@ class TypeUtility
     public const TYPE_OBJECT = 'object';
     public const TYPE_NULL = 'null';
     public const TYPE_CALLABLE = 'callable';
+    public const TYPE_MIXED = 'mixed';
     # pseudo
     public const TYPE_ITERABLE = 'iterable';
     public const TYPE_NUMERIC = 'numeric';
@@ -27,6 +28,7 @@ class TypeUtility
     public const TYPE_EMPTY = 'empty';
     public const TYPES_VERIFIERS = [
         # base
+        self::TYPE_MIXED => [self::class, 'isMixed'],
         self::TYPE_BOOL => 'is_bool',
         self::TYPE_INT => 'is_int',
         self::TYPE_FLOAT => 'is_float',
@@ -60,6 +62,11 @@ class TypeUtility
         return is_string($value) && preg_match('/^[0-9]+$/', $value);
     }
 
+    public static function isMixed(mixed $value): bool
+    {
+        return true;
+    }
+
     /**
      * @param mixed $value
      * @param string[]|string $type
@@ -69,12 +76,12 @@ class TypeUtility
      */
     public static function ensure(mixed $value, array|string $type, ?string $errorMessage = null): void
     {
-        $types = array_reduce((array)$type, fn(array $carry, string $type): array => array_merge(
-            self::normalizeType($type),
-            $carry,
-        ), []);
+        $types = array_reduce((array)$type, fn(array $carry, string $type): array => [
+            ...self::normalizeType($type),
+            ...$carry,
+        ], []);
 
-        foreach ((array)$type as $type) {
+        foreach ($types as $type) {
             if (TypeUtility::verifyType($value, $type)) {
                 return;
             }

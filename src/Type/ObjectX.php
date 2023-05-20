@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
-use Takeoto\Type\Contract\MixedXInterface;
-use Takeoto\Type\Contract\ObjectXInterface;
-use Takeoto\Type\Type;
+use Takeoto\Type\Contract\TypeX\ObjectXInterface;
 use Takeoto\Type\Utility\TypeUtility;
 
 class ObjectX implements ObjectXInterface

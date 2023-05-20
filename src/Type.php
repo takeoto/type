@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Takeoto\Type;
 
 use Takeoto\Type\Contract\MagicStaticCallableInterface;
+use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
 use Takeoto\Type\Utility\TypeUtility;
 
-class Type implements MagicStaticCallableInterface
+class Type implements MagicStaticCallableInterface, TransitionalInterface
 {
     use PseudoTypesTrait;
     use CustomTypesTrait;
@@ -147,6 +148,22 @@ class Type implements MagicStaticCallableInterface
         return ArrayX::new($value, $error);
     }
 
+    public static function arrayXScheme(): array
+    {
+        return [
+            'arguments' => [
+                'value' => [
+                    'type' => 'mixed',
+                ],
+                'error' => [
+                    'type' => 'string|null',
+                    'default' => null,
+                ],
+            ],
+            'return' => ArrayX::class,
+        ];
+    }
+
     /**
      * @param mixed $value
      * @param string|null $error
@@ -156,14 +173,6 @@ class Type implements MagicStaticCallableInterface
     public static function objectX(mixed $value, string $error = null): ObjectX
     {
         return ObjectX::new($value, $error);
-    }
-
-    /**
-     * @return string[]
-     */
-    protected static function getTransitMethods(): array
-    {
-        return ['arrayX', 'objectX'];
     }
 
     private function __construct()

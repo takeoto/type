@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Takeoto\Type\Contract;
+namespace Takeoto\Type\Contract\TypeX;
 
-interface ObjectXInterface
+use Takeoto\Type\Contract\Type\ObjectTypeInterface;
+
+interface ObjectXInterface extends ObjectTypeInterface
 {
     /**
      * @param string $name
@@ -25,9 +27,4 @@ interface ObjectXInterface
      * @return TInstance
      */
     public function instanceOf(string $class): object;
-
-    /**
-     * @return object
-     */
-    public function object(): object;
 }

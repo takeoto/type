@@ -116,10 +116,7 @@ trait CustomTypesTrait
 
     public static function supportMagicStaticCall(string $method): bool
     {
-        $transitMethods = array_flip(static::getTransitMethods());
-
-        return CallUtility::isStrictTypeCall($method)
-            || CallUtility::isTransitCall($method, self::class, fn(string $m) => isset($transitMethods[$m]));
+        return CallUtility::isStrictTypeCall($method) || CallUtility::isTransitCall($method, static::class);
     }
 
     /**
@@ -139,5 +136,19 @@ trait CustomTypesTrait
         }
 
         return CallUtility::callTransit($method, $arguments, self::class);
+    }
+
+    public static function parseTransitMethod(string $method): ?string
+    {
+        return CallUtility::parseMethod(
+            $method,
+            static::class,
+            fn(string $method): bool => static::getTransitMethodScheme($method) !== null
+        );
+    }
+
+    public static function getTransitMethodScheme(string $method): ?array
+    {
+        return CallUtility::getSelfMethodSchema($method, static::class);
     }
 }

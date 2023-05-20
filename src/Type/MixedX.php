@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
-use Takeoto\Type\Contract\MixedXInterface;
 use Takeoto\Type\Contract\MagicCallableInterface;
+use Takeoto\Type\Contract\TransitionalInterface;
+use Takeoto\Type\Contract\TypeX\MixedXInterface;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
 
@@ -38,7 +39,7 @@ use Takeoto\Type\Utility\CallUtility;
  * @method static null|string|int|float nullOrNumeric()
  * @method static int|string intOrStringInt()
  */
-class MixedX implements MixedXInterface, MagicCallableInterface
+class MixedX implements MixedXInterface, MagicCallableInterface, TransitionalInterface
 {
     private ?string $customErrorMessage = null;
 
@@ -188,12 +189,24 @@ class MixedX implements MixedXInterface, MagicCallableInterface
         return $this;
     }
 
+    public static function errorIfNotScheme(): array
+    {
+        return [
+            'arguments' => [
+                0 => [
+                    'type' => 'string|null',
+                ],
+            ],
+            'return' => static::class,
+        ];
+    }
+
     /**
      * @inheritDoc
      */
     public function supportMagicCall(string $method): bool
     {
-        return CallUtility::isStrictTypeCall($method) || CallUtility::isTransitCall($method, $this, fn(string $method) => $method === 'errorIfNot');
+        return CallUtility::isStrictTypeCall($method) || CallUtility::isTransitCall($method, $this);
     }
 
     /**
@@ -210,5 +223,21 @@ class MixedX implements MixedXInterface, MagicCallableInterface
         }
 
         return CallUtility::callTransit($method, $arguments, $this);
+    }
+
+    public static function parseTransitMethod(string $method): ?string
+    {
+        return CallUtility::parseMethod(
+            $method,
+            static::class,
+            fn(string $method): bool => static::getTransitMethodScheme($method) !== null
+        );
+    }
+
+    public static function getTransitMethodScheme(string $method): ?array
+    {
+        return CallUtility::isStrictTypeCall($method) ? [
+            'arguments' => [],
+        ] : CallUtility::getSelfMethodSchema($method, static::class);
     }
 }

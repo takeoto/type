@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
-use Takeoto\Type\Contract\ArrayXInterface;
+use Takeoto\Type\Contract\TransitionalInterface;
+use Takeoto\Type\Contract\TypeX\ArrayXInterface;
 use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Exception\ArrayXKeyNotFoundException;
 use Takeoto\Type\Type;
@@ -15,7 +16,7 @@ use Takeoto\Type\Utility\CallUtility;
  * @template TValue
  * @implements ArrayXInterface<TKey, TValue>
  */
-class ArrayX implements ArrayXInterface, MagicCallableInterface
+class ArrayX implements ArrayXInterface, MagicCallableInterface, TransitionalInterface
 {
     /**
      * @var array<TKey,TValue>
@@ -54,6 +55,18 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface
         }
 
         return MixedX::new($this->array[$key]);
+    }
+
+    public static function getScheme(): array
+    {
+        return [
+            'arguments' => [
+                0 => [
+                    'type' => 'int|string',
+                ],
+            ],
+            'return' => MixedX::class,
+        ];
     }
 
     /**
@@ -159,7 +172,7 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface
 
     public function supportMagicCall(string $method): bool
     {
-        return CallUtility::isTransitCall($method, $this, fn(string $method) => $method === 'get');
+        return CallUtility::isTransitCall($method, $this);
     }
 
     public function __call(string $method, array $arguments): mixed
@@ -169,5 +182,19 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface
         }
 
         return CallUtility::callTransit($method, $arguments, $this);
+    }
+
+    public static function parseTransitMethod(string $method): ?string
+    {
+        return CallUtility::parseMethod(
+            $method,
+            static::class,
+            fn(string $method): bool => static::getTransitMethodScheme($method) !== null
+        );
+    }
+
+    public static function getTransitMethodScheme(string $method): ?array
+    {
+        return CallUtility::getSelfMethodSchema($method, static::class);
     }
 }
