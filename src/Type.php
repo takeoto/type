@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Takeoto\Type;
 
 use Takeoto\Type\Contract\MagicStaticCallableInterface;
+use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
-use Takeoto\Type\Dictionary\SchemeDict;
+use Takeoto\Type\Dictionary\MetaDict;
 use Takeoto\Type\Dictionary\TypeDict;
+use Takeoto\Type\Scheme\MethodScheme;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Type\ObjectX;
-use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
 class Type implements MagicStaticCallableInterface, TransitionalInterface
@@ -154,22 +155,14 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
     /**
      * The scheme for self::arrayX
      *
-     * @return mixed[]
+     * @return MethodSchemeInterface
      */
-    public static function arrayXScheme(): array
+    public static function arrayXScheme(): MethodSchemeInterface
     {
-        return [
-            SchemeDict::ARGUMENTS => [
-                [
-                    SchemeDict::TYPE => TypeDict::MIXED,
-                ],
-                [
-                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::NULL),
-                    SchemeDict::DEFAULT => null,
-                ],
-            ],
-            SchemeDict::RETURN => ArrayX::class,
-        ];
+        return MethodScheme::new('arrayX')
+            ->arg(0, 'mixed')
+            ->arg(1, 'string|null')->default(null)
+            ->return(ArrayX::class);
     }
 
     /**
@@ -186,22 +179,14 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
     /**
      * The scheme for self::objectX
      *
-     * @return mixed[]
+     * @return MethodSchemeInterface
      */
-    public static function objectXScheme(): array
+    public static function objectXScheme(): MethodSchemeInterface
     {
-        return [
-            SchemeDict::ARGUMENTS => [
-                [
-                    SchemeDict::TYPE => TypeDict::MIXED,
-                ],
-                [
-                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::NULL),
-                    SchemeDict::DEFAULT => null,
-                ],
-            ],
-            SchemeDict::RETURN => ObjectX::class,
-        ];
+        return MethodScheme::new('objectX')
+            ->arg(0, 'mixed')
+            ->arg(1, 'string|null')->default(null)
+            ->return(ObjectX::class);
     }
 
     private function __construct()

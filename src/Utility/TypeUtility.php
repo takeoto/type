@@ -108,7 +108,7 @@ class TypeUtility
         return explode('|', $type);
     }
 
-    public static function oneOf(string ...$types): string
+    public static function denormalizeType(string ...$types): string
     {
         return implode('|', $types);
     }

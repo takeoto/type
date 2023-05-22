@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\MagicCallableInterface;
+use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Contract\TypeX\MixedXInterface;
-use Takeoto\Type\Dictionary\SchemeDict;
+use Takeoto\Type\Dictionary\MetaDict;
 use Takeoto\Type\Dictionary\TypeDict;
+use Takeoto\Type\Scheme\MethodScheme;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
@@ -16,33 +18,33 @@ use Takeoto\Type\Utility\TypeUtility;
 /**
  * NOT types
  *
- * @method static mixed notEmpty()
- * @method static mixed notFalse()
- * @method static mixed notTrue()
- * @method static float|string|object|array|bool|callable|null|iterable notInt()
- * @method static int|string|object|array|bool|callable|null|iterable notFloat()
- * @method static int|float|object|array|bool|callable|null|iterable notString()
- * @method static int|float|string|array|bool|callable|null|iterable notObject()
- * @method static int|float|string|object|bool|callable|null|iterable notArray()
- * @method static int|float|string|object|array|callable|null|iterable notBool()
- * @method static int|float|string|object|array|bool|null|iterable notCallable()
- * @method static int|float|string|object|array|bool|callable|iterable notNull()
+ * @method mixed notEmpty()
+ * @method mixed notFalse()
+ * @method mixed notTrue()
+ * @method float|string|object|array|bool|callable|null|iterable notInt()
+ * @method int|string|object|array|bool|callable|null|iterable notFloat()
+ * @method int|float|object|array|bool|callable|null|iterable notString()
+ * @method int|float|string|array|bool|callable|null|iterable notObject()
+ * @method int|float|string|object|bool|callable|null|iterable notArray()
+ * @method int|float|string|object|array|callable|null|iterable notBool()
+ * @method int|float|string|object|array|bool|null|iterable notCallable()
+ * @method int|float|string|object|array|bool|callable|iterable notNull()
  *
  * Multiple types
  *
- * @method static null|int nullOrInt()
- * @method static null|float nullOrFloat()
- * @method static null|string nullOrString()
- * @method static null|object nullOrObject()
- * @method static null|array nullOrArray()
- * @method static null|bool nullOrBool()
- * @method static null|callable nullOrCallable()
- * @method static null|string nullOrStringInt()
- * @method static null|iterable nullOrIterable()
- * @method static null|string|int|float nullOrNumeric()
- * @method static int|string intOrStringInt()
+ * @method null|int nullOrInt()
+ * @method null|float nullOrFloat()
+ * @method null|string nullOrString()
+ * @method null|object nullOrObject()
+ * @method null|array nullOrArray()
+ * @method null|bool nullOrBool()
+ * @method null|callable nullOrCallable()
+ * @method null|string nullOrStringInt()
+ * @method null|iterable nullOrIterable()
+ * @method null|string|int|float nullOrNumeric()
+ * @method int|string intOrStringInt()
  */
-class MixedX implements MixedXInterface, MagicCallableInterface, TransitionalInterface
+class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInterface
 {
     private ?string $customErrorMessage = null;
 
@@ -195,18 +197,13 @@ class MixedX implements MixedXInterface, MagicCallableInterface, TransitionalInt
     /**
      * The scheme for self::errorIfNot.
      *
-     * @return mixed[]
+     * @return MethodSchemeInterface
      */
-    public static function errorIfNotScheme(): array
+    public static function errorIfNotScheme(): MethodSchemeInterface
     {
-        return [
-            SchemeDict::ARGUMENTS => [
-                [
-                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::NULL),
-                ],
-            ],
-            SchemeDict::RETURN => static::class,
-        ];
+        return MethodScheme::new('errorIfNot')
+            ->arg(0, 'string|null')
+            ->return(static::class);
     }
 
     /**
@@ -233,6 +230,9 @@ class MixedX implements MixedXInterface, MagicCallableInterface, TransitionalInt
         return CallUtility::callTransit($method, $arguments, $this);
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function parseTransitMethod(string $method): ?string
     {
         return CallUtility::parseMethod(
@@ -242,14 +242,13 @@ class MixedX implements MixedXInterface, MagicCallableInterface, TransitionalInt
         );
     }
 
-    public static function getTransitMethodScheme(string $method): ?array
+    /**
+     * @inheritDoc
+     */
+    public static function getTransitMethodScheme(string $method): ?MethodSchemeInterface
     {
-        return CallUtility::isStrictTypeCall($method) ? [
-            SchemeDict::ARGUMENTS => [],
-            SchemeDict::RETURN => TypeUtility::oneOf(...array_column(
-                iterator_to_array(CallUtility::iterateMethodTypes($method)),
-                'type',
-            )),
-        ] : CallUtility::getSelfMethodSchema($method, static::class);
+        return CallUtility::isStrictTypeCall($method)
+            ? MethodScheme::new($method)->return(CallUtility::methodTypesToType($method))
+            : CallUtility::getSelfMethodSchema($method, static::class);
     }
 }

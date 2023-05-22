@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
+use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Contract\TypeX\ArrayXInterface;
 use Takeoto\Type\Contract\MagicCallableInterface;
-use Takeoto\Type\Dictionary\SchemeDict;
+use Takeoto\Type\Dictionary\MetaDict;
 use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Exception\ArrayXKeyNotFoundException;
+use Takeoto\Type\Scheme\MethodScheme;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
@@ -63,18 +65,13 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface, TransitionalInt
     /**
      * The scheme for self::get.
      *
-     * @return mixed[]
+     * @return MethodSchemeInterface
      */
-    public static function getScheme(): array
+    public static function getScheme(): MethodSchemeInterface
     {
-        return [
-            SchemeDict::ARGUMENTS => [
-                [
-                    SchemeDict::TYPE => TypeUtility::oneOf(TypeDict::STRING, TypeDict::INT),
-                ],
-            ],
-            SchemeDict::RETURN => MixedX::class,
-        ];
+        return MethodScheme::new('get')
+            ->arg(0, 'int|string')
+            ->return(MixedX::class);
     }
 
     /**
@@ -201,7 +198,7 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface, TransitionalInt
         );
     }
 
-    public static function getTransitMethodScheme(string $method): ?array
+    public static function getTransitMethodScheme(string $method): ?MethodSchemeInterface
     {
         return CallUtility::getSelfMethodSchema($method, static::class);
     }

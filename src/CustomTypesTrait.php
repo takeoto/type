@@ -2,6 +2,7 @@
 
 namespace Takeoto\Type;
 
+use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Type\ArrayX;
 use Takeoto\Type\Utility\CallUtility;
@@ -154,7 +155,7 @@ trait CustomTypesTrait
     /**
      * @inheritDoc
      */
-    public static function getTransitMethodScheme(string $method): ?array
+    public static function getTransitMethodScheme(string $method): ?MethodSchemeInterface
     {
         return CallUtility::getSelfMethodSchema($method, static::class);
     }
