@@ -14,16 +14,22 @@ use Takeoto\Type\Contract\TransitionalInterface;
  */
 final class CallUtility
 {
+    public const EXPR_CAUSE_AND = 'and';
+    public const EXPR_CAUSE_OR = 'or';
+
     /**
-     * @param string $method
+     * @param string $expression
      * @param mixed[] $arguments
      * @return mixed
      * @throws \Throwable
      */
-    public static function strictTypeCall(string $method, array $arguments): mixed
+    public static function strictTypeCall(string $expression, array $arguments): mixed
     {
         if (!array_key_exists(0, $arguments)) {
-            throw new \InvalidArgumentException(sprintf('The first argument of %s method should be a value.', $method));
+            throw new \InvalidArgumentException(sprintf(
+                'The first argument of %s method should be a value.',
+                $expression,
+            ));
         }
 
         $value = $arguments[0];
@@ -32,29 +38,13 @@ final class CallUtility
         if (!is_string($error) && $error !== null) {
             throw new \InvalidArgumentException(sprintf(
                 'The second argument of %s method should be an error message.',
-                $method,
+                $expression,
             ));
         }
 
-        $types = [];
+        TypeUtility::ensure($value, self::typeExpressionCallToType($expression), 'The value should be %s, got: %s');
 
-        foreach (self::iterateMethodTypes($method) as $fullType => ['type' => $type, 'isNegative' => $isNegative]) {
-            $types[] = $fullType;
-
-            if ($type === null) {
-                throw new \Exception(sprintf('Unknown type %s', $fullType));
-            }
-
-            if (TypeUtility::verifyType($value, $type) xor $isNegative) {
-                return $value;
-            }
-        }
-
-        TypeUtility::throwWrongTypeException(\sprintf(
-            $error ?? 'The value should be one of types %s. Got: %s',
-            implode('|', $types),
-            TypeUtility::typeToString($value)
-        ));
+        return $value;
     }
 
     /**
@@ -102,6 +92,7 @@ final class CallUtility
         /** @var callable $callable */
         $callable = [$target, $method];
 
+        # verify schema
         return call_user_func_array($callable, $arguments);
     }
 
@@ -109,15 +100,9 @@ final class CallUtility
      * @param string $method
      * @return bool
      */
-    public static function isStrictTypeCall(string $method): bool
+    public static function isTypeExpressionCall(string $method): bool
     {
-        foreach (self::iterateMethodTypes($method) as ['type' => $type]) {
-            if (null === $type) {
-                return false;
-            }
-        }
-
-        return true;
+        return null !== self::pareTypeExpressionCall($method);
     }
 
     /**
@@ -128,13 +113,13 @@ final class CallUtility
     public static function isTransitCall(string $method, string|object $target): bool
     {
         self::ensureTransitional($target);
-
+        /** @var TransitionalInterface $target */
         $composedMethod = null;
 
         foreach (self::iterateMethodParts($method) as $method) {
             $composedMethod = $composedMethod === null ? $method : $composedMethod . ucfirst($method);
 
-            if ($target::parseTransitMethod($composedMethod) !== null) {
+            if ($target::getMethodScheme($composedMethod) !== null) {
                 return true;
             }
         }
@@ -169,30 +154,15 @@ final class CallUtility
 
     /**
      * @param string $method
-     * @param string|null $delimiter
      * @return \Traversable<int,string>
      */
-    private static function iterateMethodParts(string $method, string $delimiter = null): \Traversable
+    private static function iterateMethodParts(string $method): \Traversable
     {
         $methodParts = preg_split('/(?=[A-Z])/', $method) ?: [];
 
-        if ($delimiter === null || $delimiter === '') {
-            yield from array_map('lcfirst', $methodParts);
-            return;
+        foreach ($methodParts as $methodPart) {
+            yield lcfirst($methodPart);
         }
-
-        $composedType = '';
-
-        foreach ($methodParts as $part) {
-            if ($part === $delimiter) {
-                yield lcfirst($composedType);
-                $composedType = '';
-            } else {
-                $composedType = $composedType === '' ? $part : $composedType . $part;
-            }
-        }
-
-        yield lcfirst($composedType);
     }
 
     /**
@@ -251,7 +221,12 @@ final class CallUtility
         }
 
         if ($schemesReqArgsCount > count($arguments)) {
-            throw new \RuntimeException(sprintf('Required arguments of "%s" method more than given!', $method));
+            throw new \RuntimeException(sprintf(
+                'Required %d arguments of "%s" method, %d given!',
+                $schemesReqArgsCount,
+                $method,
+                $argumentsCount,
+            ));
         }
 
         if ($argumentsCount > $schemesArgsCount) {
@@ -295,6 +270,7 @@ final class CallUtility
      * @param string $method
      * @param string $class
      * @return MethodSchemeInterface|null
+     * P.S. I don't like a reflection API
      */
     public static function getSelfMethodSchema(string $method, string $class): ?MethodSchemeInterface
     {
@@ -314,29 +290,26 @@ final class CallUtility
         return $scheme;
     }
 
-    /**
-     * @param string $method
-     * @return \Traversable<string,array{type: string|null, isNegative: bool}>
-     */
-    public static function iterateMethodTypes(string $method): \Traversable
+    public static function typeExpressionCallToType(string $method): ?string
     {
-        foreach (self::iterateMethodParts($method, 'Or') as $fullType) {
-            $type = str_starts_with($fullType, 'not') ? lcfirst(substr($fullType, 3)) : $fullType;
+        $parsedMethod = self::pareTypeExpressionCall($method);
 
-            yield $fullType => [
-                'type' => $type === '' || !TypeUtility::hasType($type) ? null : $type,
-                'isNegative' => $fullType !== $type,
-            ];
-        }
-    }
+        return $parsedMethod === null ? null : array_reduce(
+            $parsedMethod,
+            function(?string $carry, array $part): string {
+                $value = $part['value'];
 
-    public static function methodTypesToType(string $method): string
-    {
-        return TypeUtility::denormalizeType(
-            ...array_column(
-                iterator_to_array(CallUtility::iterateMethodTypes($method)),
-                'type',
-            )
+                if ($part['type'] === TypeUtility::EXPR_CAUSE) {
+                    $value = [
+                        self::EXPR_CAUSE_OR => TypeUtility::EXPR_CAUSE_OR,
+                        self::EXPR_CAUSE_AND => TypeUtility::EXPR_CAUSE_AND,
+                    ][$value] ?? throw new \LogicException(sprintf('Unknown a value "%s" of a clause.', $value));
+                }
+
+                # need improve [notInt&NotString - case]
+                return $carry === '' ? $value : $carry . ucfirst($value);
+            },
+            '',
         );
     }
 
@@ -356,7 +329,7 @@ final class CallUtility
                 break;
             }
 
-            yield $targetMethod => $scheme = $target::getTransitMethodScheme($targetMethod);
+            yield $targetMethod => $scheme = $target::getMethodScheme($targetMethod);
             $target = $scheme?->getReturnType();
         }
 
@@ -373,8 +346,8 @@ final class CallUtility
     private static function shiftTransitMethod(string &$method, string|object $target): ?string
     {
         self::ensureTransitional($target);
-
-        $targetMethod = $target::parseTransitMethod($method);
+        /** @var TransitionalInterface $target */
+        $targetMethod = self::parseMethod($method, $target, fn(string $m) => $target::getMethodScheme($m) !== null);
         $method = self::cutOffMethod($method, $targetMethod ?? '');
 
         return $targetMethod;
@@ -426,5 +399,19 @@ final class CallUtility
                 TransitionalInterface::class,
             ));
         }
+    }
+
+    /**
+     * @param string $method
+     * @return array|null
+     */
+    private static function pareTypeExpressionCall(string $method): ?array
+    {
+        return TypeUtility::parseExpression($method, [
+            TypeUtility::EXPR_CAUSE => fn(string $v): bool => [
+                self::EXPR_CAUSE_AND => true,
+                self::EXPR_CAUSE_OR => true,
+            ][$v] ?? false,
+        ]);
     }
 }

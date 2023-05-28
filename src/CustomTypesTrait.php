@@ -4,7 +4,7 @@ namespace Takeoto\Type;
 
 use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Dictionary\TypeDict;
-use Takeoto\Type\Type\ArrayX;
+use Takeoto\Type\Type\MixedX;
 use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
@@ -39,7 +39,7 @@ use Takeoto\Type\Utility\TypeUtility;
  *
  * ArrayX a strict value getting
  *
- * @method static ArrayX arrayXGet(mixed[] $array, string $key)
+ * @method static MixedX arrayXGet(mixed[] $array, string $key)
  * @method static int arrayXGetInt(mixed[] $array, string $key)
  * @method static float arrayXGetFloat(mixed[] $array, string $key)
  * @method static string arrayXGetString(mixed[] $array, string $key)
@@ -121,7 +121,7 @@ trait CustomTypesTrait
      */
     public static function supportMagicStaticCall(string $method): bool
     {
-        return CallUtility::isStrictTypeCall($method) || CallUtility::isTransitCall($method, static::class);
+        return CallUtility::isTypeExpressionCall($method) || CallUtility::isTransitCall($method, static::class);
     }
 
     /**
@@ -133,7 +133,7 @@ trait CustomTypesTrait
             throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
         }
 
-        if (CallUtility::isStrictTypeCall($method)) {
+        if (CallUtility::isTypeExpressionCall($method)) {
             return CallUtility::strictTypeCall($method, $arguments);
         }
 
@@ -143,19 +143,7 @@ trait CustomTypesTrait
     /**
      * @inheritDoc
      */
-    public static function parseTransitMethod(string $method): ?string
-    {
-        return CallUtility::parseMethod(
-            $method,
-            static::class,
-            fn(string $method): bool => static::getTransitMethodScheme($method) !== null
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getTransitMethodScheme(string $method): ?MethodSchemeInterface
+    public static function getMethodScheme(string $method): ?MethodSchemeInterface
     {
         return CallUtility::getSelfMethodSchema($method, static::class);
     }

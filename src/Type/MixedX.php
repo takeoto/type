@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
+use Takeoto\Type\Condition\ErrorIfCondition;
 use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Contract\TypeX\MixedXInterface;
-use Takeoto\Type\Dictionary\MetaDict;
-use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Scheme\MethodScheme;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
-use Takeoto\Type\Utility\TypeUtility;
 
 /**
  * NOT types
@@ -46,8 +44,6 @@ use Takeoto\Type\Utility\TypeUtility;
  */
 class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInterface
 {
-    private ?string $customErrorMessage = null;
-
     public function __construct(private mixed $value)
     {
     }
@@ -62,7 +58,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function int(): int
     {
-        return Type::int($this->value, $this->customErrorMessage);
+        return Type::int($this->value);
     }
 
     /**
@@ -70,7 +66,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function float(): float
     {
-        return Type::float($this->value, $this->customErrorMessage);
+        return Type::float($this->value);
     }
 
     /**
@@ -78,7 +74,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function string(): string
     {
-        return Type::string($this->value, $this->customErrorMessage);
+        return Type::string($this->value);
     }
 
     /**
@@ -86,7 +82,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function object(): object
     {
-        return Type::object($this->value, $this->customErrorMessage);
+        return Type::object($this->value);
     }
 
     /**
@@ -94,7 +90,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function array(): array
     {
-        return Type::array($this->value, $this->customErrorMessage);
+        return Type::array($this->value);
     }
 
     /**
@@ -102,7 +98,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function bool(): bool
     {
-        return Type::bool($this->value, $this->customErrorMessage);
+        return Type::bool($this->value);
     }
 
     /**
@@ -110,7 +106,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function callable(): callable
     {
-        return Type::callable($this->value, $this->customErrorMessage);
+        return Type::callable($this->value);
     }
 
     /**
@@ -126,7 +122,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function null()
     {
-        return Type::null($this->value, $this->customErrorMessage);
+        return Type::null($this->value);
     }
 
     /**
@@ -135,7 +131,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function objectX(): ObjectX
     {
-        return ObjectX::new($this->value, $this->customErrorMessage);
+        return ObjectX::new($this->value);
     }
 
     /**
@@ -144,7 +140,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function arrayX(): ArrayX
     {
-        return ArrayX::new($this->value, $this->customErrorMessage);
+        return ArrayX::new($this->value);
     }
 
     /**
@@ -153,7 +149,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function iterable(): iterable
     {
-        return Type::iterable($this->value, $this->customErrorMessage);
+        return Type::iterable($this->value);
     }
 
     /**
@@ -162,7 +158,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function numeric(): string|int|float
     {
-        return Type::numeric($this->value, $this->customErrorMessage);
+        return Type::numeric($this->value);
     }
 
     /**
@@ -171,7 +167,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function true(): bool
     {
-        return Type::true($this->value, $this->customErrorMessage);
+        return Type::true($this->value);
     }
 
     /**
@@ -180,30 +176,28 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function false(): bool
     {
-        return Type::false($this->value, $this->customErrorMessage);
+        return Type::false($this->value);
     }
 
     /**
-     * @param string|null $message
-     * @return static
+     * @param string $message
+     * @return ErrorIfCondition
      */
-    public function errorIfNot(?string $message): static
+    public function errorIf(string $message): ErrorIfCondition
     {
-        $this->customErrorMessage = $message;
-
-        return $this;
+        return new ErrorIfCondition($this->value, $message);
     }
 
     /**
-     * The scheme for self::errorIfNot.
+     * The scheme for self::errorIf.
      *
      * @return MethodSchemeInterface
      */
-    public static function errorIfNotScheme(): MethodSchemeInterface
+    public static function errorIfScheme(): MethodSchemeInterface
     {
-        return MethodScheme::new('errorIfNot')
-            ->arg(0, 'string|null')
-            ->return(static::class);
+        return MethodScheme::new('errorIf')
+            ->arg(0, 'string')
+            ->return(ErrorIfCondition::class);
     }
 
     /**
@@ -211,7 +205,7 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
      */
     public function supportMagicCall(string $method): bool
     {
-        return CallUtility::isStrictTypeCall($method) || CallUtility::isTransitCall($method, $this);
+        return CallUtility::isTypeExpressionCall($method) || CallUtility::isTransitCall($method, $this);
     }
 
     /**
@@ -223,8 +217,8 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
             throw new \RuntimeException(sprintf('Method "%s" does not exist.', $method));
         }
 
-        if (CallUtility::isStrictTypeCall($method)) {
-            return CallUtility::strictTypeCall($method, [$this->value, $this->customErrorMessage]);
+        if (CallUtility::isTypeExpressionCall($method)) {
+            return CallUtility::strictTypeCall($method, [$this->value]);
         }
 
         return CallUtility::callTransit($method, $arguments, $this);
@@ -233,22 +227,10 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
     /**
      * @inheritDoc
      */
-    public static function parseTransitMethod(string $method): ?string
+    public static function getMethodScheme(string $method): ?MethodSchemeInterface
     {
-        return CallUtility::parseMethod(
-            $method,
-            static::class,
-            fn(string $method): bool => static::getTransitMethodScheme($method) !== null
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getTransitMethodScheme(string $method): ?MethodSchemeInterface
-    {
-        return CallUtility::isStrictTypeCall($method)
-            ? MethodScheme::new($method)->return(CallUtility::methodTypesToType($method))
+        return CallUtility::isTypeExpressionCall($method)
+            ? MethodScheme::new($method)->return(CallUtility::typeExpressionCallToType($method))
             : CallUtility::getSelfMethodSchema($method, static::class);
     }
 }

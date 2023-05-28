@@ -49,4 +49,11 @@ Type::arrayXGetErrorIfNotInt($array, 'key0', 'Yours custom error message!');
 # Multiple type
 Type::arrayXGetNullOrString($array, 'key0')
 Type::arrayXGetErrorIfNotNullOrString($array, 'key0', 'Yours custom error message!');
+
+Type::arrayXGetIntX('key', 1, 3);
+  
+Type::notIntAndNotString(123); # return INT or throw an exception 
+Type::nullOrString(123); # return INT or throw an exception
+Type::errorIfNotIntAndNotString(); # return INT or throw an exception
+Type::arrayXGetIsString($array, 'key0'); # return bool
 ```

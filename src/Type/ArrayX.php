@@ -189,16 +189,7 @@ class ArrayX implements ArrayXInterface, MagicCallableInterface, TransitionalInt
         return CallUtility::callTransit($method, $arguments, $this);
     }
 
-    public static function parseTransitMethod(string $method): ?string
-    {
-        return CallUtility::parseMethod(
-            $method,
-            static::class,
-            fn(string $method): bool => static::getTransitMethodScheme($method) !== null
-        );
-    }
-
-    public static function getTransitMethodScheme(string $method): ?MethodSchemeInterface
+    public static function getMethodScheme(string $method): ?MethodSchemeInterface
     {
         return CallUtility::getSelfMethodSchema($method, static::class);
     }

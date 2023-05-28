@@ -7,7 +7,6 @@ namespace Takeoto\Type;
 use Takeoto\Type\Contract\MagicStaticCallableInterface;
 use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
-use Takeoto\Type\Dictionary\MetaDict;
 use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Scheme\MethodScheme;
 use Takeoto\Type\Type\ArrayX;
