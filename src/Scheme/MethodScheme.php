@@ -41,10 +41,10 @@ final class MethodScheme implements MethodSchemeInterface
 
     /**
      * @param int|string $name
-     * @param string|string[] $type
+     * @param string $type
      * @return self
      */
-    public function arg(int|string $name, string|array $type): self
+    public function arg(int|string $name, string $type): self
     {
         $this->arguments[$name] = new MethodArgumentScheme($name, $type);
 
@@ -56,7 +56,12 @@ final class MethodScheme implements MethodSchemeInterface
         $key ??= array_key_last($this->arguments) ?? throw new \RuntimeException(
             'The default value argument key should be provided.'
         );
-        $this->arguments[$key]?->setDefault($value);
+
+        if (!array_key_exists($key, $this->arguments)) {
+            return $this;
+        }
+
+        $this->arguments[$key]->setDefault($value);
 
         return $this;
     }

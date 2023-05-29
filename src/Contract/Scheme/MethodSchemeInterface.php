@@ -12,7 +12,7 @@ interface MethodSchemeInterface
     public function getArguments(): array;
 
     /**
-     * @return string|string[]
+     * @return string
      */
-    public function getReturnType(): string|array;
+    public function getReturnType(): string;
 }

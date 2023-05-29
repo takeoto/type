@@ -9,14 +9,11 @@ use Takeoto\Type\Contract\Scheme\MethodArgumentSchemeInterface;
 final class MethodArgumentScheme implements MethodArgumentSchemeInterface
 {
     private mixed $defaultValue;
-    /**
-     * @var true
-     */
     private bool $withDefaultValue = false;
 
     public function __construct(
         private int|string $name,
-        private string|array $type,
+        private string $type,
     ) {
     }
 
@@ -25,7 +22,7 @@ final class MethodArgumentScheme implements MethodArgumentSchemeInterface
         return $this->name;
     }
 
-    public function getType(): string|array
+    public function getType(): string
     {
         return $this->type;
     }

@@ -102,7 +102,7 @@ final class CallUtility
      */
     public static function isTypeExpressionCall(string $method): bool
     {
-        return null !== self::pareTypeExpressionCall($method);
+        return null !== self::parseTypeExpressionCall($method);
     }
 
     /**
@@ -188,7 +188,7 @@ final class CallUtility
 
     /**
      * @param string $method
-     * @param string|object $target
+     * @param class-string|object $target
      * @param mixed[] $arguments
      * @return mixed[]
      * @throws \Throwable
@@ -268,7 +268,7 @@ final class CallUtility
 
     /**
      * @param string $method
-     * @param string $class
+     * @param class-string $class
      * @return MethodSchemeInterface|null
      * P.S. I don't like a reflection API
      */
@@ -278,7 +278,9 @@ final class CallUtility
             return null;
         }
 
-        $scheme = call_user_func([$class, $schemeMethod]);
+        /** @var callable $caller */
+        $caller = [$class, $schemeMethod];
+        $scheme = call_user_func($caller);
 
         if (!$scheme instanceof MethodSchemeInterface) {
             throw new \LogicException(sprintf(
@@ -290,19 +292,20 @@ final class CallUtility
         return $scheme;
     }
 
-    public static function typeExpressionCallToType(string $method): ?string
+    public static function typeExpressionCallToType(string $method): string
     {
-        $parsedMethod = self::pareTypeExpressionCall($method);
+        $parsedMethod = self::parseTypeExpressionCall($method)
+            ?? throw new \LogicException(sprintf('Cannot convert a method "%s" to a type', $method));
 
-        return $parsedMethod === null ? null : array_reduce(
+        return array_reduce(
             $parsedMethod,
             function(?string $carry, array $part): string {
                 $value = $part['value'];
 
-                if ($part['type'] === TypeUtility::EXPR_CAUSE) {
+                if ($part['type'] === TypeUtility::EXPR_CLAUSE) {
                     $value = [
-                        self::EXPR_CAUSE_OR => TypeUtility::EXPR_CAUSE_OR,
-                        self::EXPR_CAUSE_AND => TypeUtility::EXPR_CAUSE_AND,
+                        self::EXPR_CAUSE_OR => '|',
+                        self::EXPR_CAUSE_AND => '&',
                     ][$value] ?? throw new \LogicException(sprintf('Unknown a value "%s" of a clause.', $value));
                 }
 
@@ -316,7 +319,7 @@ final class CallUtility
     /**
      * @param string $method
      * @param class-string|object $target
-     * @return \Traversable<string,MethodSchemeInterface>
+     * @return \Traversable<string,null|MethodSchemeInterface>
      */
     private static function iterateMethodsSchemas(string $method, string|object $target): \Traversable
     {
@@ -387,12 +390,14 @@ final class CallUtility
     }
 
     /**
-     * @param object|class-string $target
+     * @param mixed $target
      * @phpstan-assert TransitionalInterface $target
      * @return void
      */
-    private static function ensureTransitional(object|string $target): void
+    private static function ensureTransitional(mixed $target): void
     {
+        self::ensureCallable($target);
+
         if (!is_subclass_of($target, TransitionalInterface::class)) {
             throw new \LogicException(sprintf(
                 'The value should be an instance of "%s"!',
@@ -403,15 +408,17 @@ final class CallUtility
 
     /**
      * @param string $method
-     * @return array|null
+     * @return null|array<int,array{type: string, value: string}>
+     * @throws \Throwable
      */
-    private static function pareTypeExpressionCall(string $method): ?array
+    private static function parseTypeExpressionCall(string $method): ?array
     {
+        # @phpstan-ignore-next-line
         return TypeUtility::parseExpression($method, [
-            TypeUtility::EXPR_CAUSE => fn(string $v): bool => [
-                self::EXPR_CAUSE_AND => true,
-                self::EXPR_CAUSE_OR => true,
-            ][$v] ?? false,
+            TypeUtility::EXPR_CLAUSE => fn(string $v): ?string => [
+                self::EXPR_CAUSE_AND => TypeUtility::EXPR_CLAUSE_AND,
+                self::EXPR_CAUSE_OR => TypeUtility::EXPR_CLAUSE_OR,
+            ][$v] ?? null,
         ]);
     }
 }
