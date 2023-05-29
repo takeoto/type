@@ -73,7 +73,7 @@ final class CallUtility
             return $target;
         }
 
-        self::ensureCallable($target);
+        self::ensureClassOrObject($target);
 
         return self::call($method, $target, $arguments);
     }
@@ -86,7 +86,7 @@ final class CallUtility
      */
     public static function call(string $method, string|object $target, array $arguments = []): mixed
     {
-        self::ensureCallable($target);
+        self::ensureClassOrObject($target);
         self::ensureMethodExists($method, $target);
 
         /** @var callable $callable */
@@ -324,7 +324,10 @@ final class CallUtility
     private static function iterateMethodsSchemas(string $method, string|object $target): \Traversable
     {
         while ($method) {
-            self::ensureTransitional($target);
+            if (!self::isTransitional($target)) {
+                break;
+            }
+
             /** @var TransitionalInterface $target */
             $targetMethod = self::shiftTransitMethod($method, $target);
 
@@ -366,9 +369,9 @@ final class CallUtility
      * @phpstan-assert class-string|object $target
      * @return void
      */
-    private static function ensureCallable(mixed $target): void
+    private static function ensureClassOrObject(mixed $target): void
     {
-        if (!(is_object($target) || (is_string($target) && class_exists($target)))) {
+        if (!self::isClassOrObject($target)) {
             throw new \LogicException(sprintf('%s is not callable.', TypeUtility::typeToString($target)));
         }
     }
@@ -396,14 +399,32 @@ final class CallUtility
      */
     private static function ensureTransitional(mixed $target): void
     {
-        self::ensureCallable($target);
+        self::ensureClassOrObject($target);
 
-        if (!is_subclass_of($target, TransitionalInterface::class)) {
+        if (!self::isTransitional($target)) {
             throw new \LogicException(sprintf(
                 'The value should be an instance of "%s"!',
                 TransitionalInterface::class,
             ));
         }
+    }
+
+    /**
+     * @param mixed $target
+     * @return bool
+     */
+    private static function isTransitional(mixed $target): bool
+    {
+        return self::isClassOrObject($target) && is_subclass_of($target, TransitionalInterface::class);
+    }
+
+    /**
+     * @param mixed $target
+     * @return bool
+     */
+    private static function isClassOrObject(mixed $target): bool
+    {
+        return (is_object($target) || (is_string($target) && class_exists($target)));
     }
 
     /**

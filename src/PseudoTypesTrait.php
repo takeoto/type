@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Takeoto\Type;
 
 use Takeoto\Type\Dictionary\TypeDict;

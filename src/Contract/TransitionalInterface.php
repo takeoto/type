@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Takeoto\Type\Contract;
 
 use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
