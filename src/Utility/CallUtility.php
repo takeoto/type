@@ -42,7 +42,7 @@ final class CallUtility
             ));
         }
 
-        TypeUtility::ensure($value, self::typeExpressionCallToType($expression), 'The value should be %s, got: %s');
+        TypeUtility::ensure($value, self::typeExpressionCallToType($expression), $error);
 
         return $value;
     }
