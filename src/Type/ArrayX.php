@@ -6,9 +6,8 @@ namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
-use Takeoto\Type\Contract\TypeX\ArrayXInterface;
+use Takeoto\Type\Contract\TypeX\ArrayXTypeInterface;
 use Takeoto\Type\Contract\MagicCallableInterface;
-use Takeoto\Type\Dictionary\MetaDict;
 use Takeoto\Type\Dictionary\TypeDict;
 use Takeoto\Type\Exception\ArrayXKeyNotFoundException;
 use Takeoto\Type\Scheme\MethodScheme;
@@ -19,9 +18,9 @@ use Takeoto\Type\Utility\TypeUtility;
 /**
  * @template TKey of array-key
  * @template TValue
- * @implements ArrayXInterface<TKey, TValue>
+ * @implements ArrayXTypeInterface<TKey, TValue>
  */
-class ArrayX implements ArrayXInterface, MagicCallableInterface, TransitionalInterface
+class ArrayX implements ArrayXTypeInterface, MagicCallableInterface, TransitionalInterface
 {
     /**
      * @var array<TKey,TValue>

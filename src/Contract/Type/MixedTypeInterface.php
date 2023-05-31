@@ -4,7 +4,15 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Contract\Type;
 
-interface MixedTypeInterface
+interface MixedTypeInterface extends
+    IntTypeInterface,
+    FloatTypeInterface,
+    StringTypeInterface,
+    ObjectTypeInterface,
+    ArrayTypeInterface,
+    BoolTypeInterface,
+    CallableTypeInterface,
+    NullTypeInterface
 {
     /**
      * @return mixed

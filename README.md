@@ -43,11 +43,13 @@ Type::objectX($object)->getPrivateProperty()->int(); # Error
 # Shortcuts
 Type::arrayXGet($array, 'key0123');
 Type::arrayXGetString($array, 'key0');
+Type::arrayXGetStringXLengthMax($array, 'key0', 10);
+Type::arrayXGetStringXLength($array, 'key0', 0, 12);
 Type::arrayXGetInt($array, 'key0');
 Type::arrayXGetErrorIfNotInt($array, 'key0', 'Yours custom error message!');
 
 # Multiple type
-Type::arrayXGetNullOrString($array, 'key0')
+Type::arrayXGetStringX($array, 'key0')->lengthMin(5)
 Type::arrayXGetErrorIfNotNullOrString($array, 'key0', 'Yours custom error message!');
   
 Type::notIntAndNotString(123);

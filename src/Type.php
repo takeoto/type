@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace Takeoto\Type;
 
 use Takeoto\Type\Contract\MagicStaticCallableInterface;
-use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Dictionary\TypeDict;
-use Takeoto\Type\Scheme\MethodScheme;
-use Takeoto\Type\Type\ArrayX;
-use Takeoto\Type\Type\MixedX;
-use Takeoto\Type\Type\ObjectX;
 use Takeoto\Type\Utility\TypeUtility;
 
 class Type implements MagicStaticCallableInterface, TransitionalInterface
 {
     use PseudoTypesTrait;
     use CustomTypesTrait;
+    use XTypesTrait;
 
     /**
      * @param mixed $value
@@ -129,63 +125,6 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
         TypeUtility::ensure($value, TypeDict::NULL, $error);
 
         return null;
-    }
-
-    /**
-     * @param mixed $value
-     * @return MixedX
-     */
-    public static function mixedX(mixed $value): MixedX
-    {
-        return MixedX::new($value);
-    }
-
-    /**
-     * @param mixed $value
-     * @param string|null $error
-     * @return ArrayX<int|string,mixed>
-     * @throws \Throwable
-     */
-    public static function arrayX(mixed $value, string $error = null): ArrayX
-    {
-        return ArrayX::new($value, $error);
-    }
-
-    /**
-     * The scheme for self::arrayX
-     *
-     * @return MethodSchemeInterface
-     */
-    public static function arrayXScheme(): MethodSchemeInterface
-    {
-        return MethodScheme::new('arrayX')
-            ->arg(0, 'mixed')
-            ->arg(1, 'string|null')->default(null)
-            ->return(ArrayX::class);
-    }
-
-    /**
-     * @param mixed $value
-     * @param string|null $error
-     * @return ObjectX
-     * @throws \Throwable
-     */
-    public static function objectX(mixed $value, string $error = null): ObjectX
-    {
-        return ObjectX::new($value, $error);
-    }
-
-    /**
-     * The scheme for self::objectX
-     *
-     * @return MethodSchemeInterface
-     */
-    public static function objectXScheme(): MethodSchemeInterface
-    {
-        return MethodScheme::new('objectX')
-            ->arg(0, 'mixed')
-            ->arg(1, 'string|null')->default(null)
-            ->return(ObjectX::class);
     }
 
     private function __construct()

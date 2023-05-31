@@ -12,16 +12,16 @@ use Takeoto\Type\Contract\Type\ArrayTypeInterface;
  * @extends \ArrayAccess<TKey, TValue>
  * @extends \Iterator<TKey, TValue>
  */
-interface ArrayXInterface extends \ArrayAccess, \Iterator, \Countable, ArrayTypeInterface
+interface ArrayXTypeInterface extends \ArrayAccess, \Iterator, \Countable, ArrayTypeInterface
 {
     /**
      * Gets an array value.
      *
      * @param string|int $key
      * @psalm-param TKey $key
-     * @return MixedXInterface
+     * @return MixedXTypeInterface
      */
-    public function get(string|int $key): MixedXInterface;
+    public function get(string|int $key): MixedXTypeInterface;
 
     /**
      * Checks the key on existence.
@@ -35,12 +35,12 @@ interface ArrayXInterface extends \ArrayAccess, \Iterator, \Countable, ArrayType
     /**
      * @param mixed $offset
      * @psalm-param TKey $offset
-     * @return MixedXInterface
+     * @return MixedXTypeInterface
      */
-    public function offsetGet(mixed $offset): MixedXInterface;
+    public function offsetGet(mixed $offset): MixedXTypeInterface;
 
     /**
-     * @return MixedXInterface
+     * @return MixedXTypeInterface
      */
-    public function current(): MixedXInterface;
+    public function current(): MixedXTypeInterface;
 }

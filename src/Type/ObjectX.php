@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
-use Takeoto\Type\Contract\TypeX\ObjectXInterface;
-use Takeoto\Type\Dictionary\TypeDict;
-use Takeoto\Type\Utility\TypeUtility;
+use Takeoto\Type\Contract\TypeX\ObjectXTypeInterface;
+use Takeoto\Type\Type;
 
-class ObjectX implements ObjectXInterface
+class ObjectX implements ObjectXTypeInterface
 {
     private object $object;
 
@@ -19,9 +18,7 @@ class ObjectX implements ObjectXInterface
      */
     public function __construct(mixed $object, string $errorMessage = null)
     {
-        TypeUtility::ensure($object, TypeDict::OBJECT, $errorMessage);
-        /** @var object $object */
-        $this->object = $object;
+        $this->object = Type::object($object, $errorMessage);
     }
 
     /**
@@ -49,7 +46,7 @@ class ObjectX implements ObjectXInterface
     public function __call(string $name, array $arguments): MixedX
     {
         # @phpstan-ignore-next-line
-        return MixedX::new(call_user_func([$this->object, $name], $arguments));
+        return MixedX::new(call_user_func_array([$this->object, $name], $arguments));
     }
 
     /**

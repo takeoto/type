@@ -267,7 +267,7 @@ class TypeUtility
             $newGroups = [];
 
             foreach ($groups as &$parts) {
-                $newParts = [];
+                $newGroups = [];
                 $group = [];
                 $modifier = null;
 
@@ -286,7 +286,7 @@ class TypeUtility
                             $modifier = null;
                             break;
                         case $type === self::EXPR_CLAUSE && $value === $clause:
-                            $newParts[] = $group;
+                            $newGroups[] = $group;
                             $group = [];
                             break;
                         default:
@@ -295,20 +295,20 @@ class TypeUtility
                 }
 
                 if (!empty($group)) {
-                    $newParts[] = $group;
+                    $newGroups[] = $group;
                 }
 
                 if ($isLastClause) {
-                    $newParts = array_map(fn(array $g): array => count($g) === 1 ? reset($g) : $g, $newParts);
+                    array_walk($newGroups, fn(array &$one): array => $one = count($one) === 1 ? reset($one) : $one);
                 }
 
-                if (count($newParts) === 1) {
-                    $parts = reset($newParts);
+                if (count($newGroups) === 1) {
+                    $parts = reset($newGroups);
                     $newGroups[] = &$parts;
                     continue;
                 }
 
-                $parts = ['type' => self::EXPR_CLAUSE, 'value' => $clause, 'parts' => $newParts];
+                $parts = ['type' => self::EXPR_CLAUSE, 'value' => $clause, 'parts' => $newGroups];
 
                 foreach ($parts['parts'] as &$partRef) {
                     $newGroups[] = &$partRef;

@@ -6,20 +6,20 @@ namespace Takeoto\Type\Contract\TypeX;
 
 use Takeoto\Type\Contract\Type\ObjectTypeInterface;
 
-interface ObjectXInterface extends ObjectTypeInterface
+interface ObjectXTypeInterface extends ObjectTypeInterface
 {
     /**
      * @param string $name
      * @param mixed[] $arguments
-     * @return MixedXInterface
+     * @return MixedXTypeInterface
      */
-    public function __call(string $name, array $arguments): MixedXInterface;
+    public function __call(string $name, array $arguments): MixedXTypeInterface;
 
     /**
      * @param string $key
-     * @return MixedXInterface
+     * @return MixedXTypeInterface
      */
-    public function __get(string $key): MixedXInterface;
+    public function __get(string $key): MixedXTypeInterface;
 
     /**
      * @template TInstance of object

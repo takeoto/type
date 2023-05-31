@@ -8,7 +8,9 @@ use Takeoto\Type\Condition\ErrorIfCondition;
 use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
-use Takeoto\Type\Contract\TypeX\MixedXInterface;
+use Takeoto\Type\Contract\TypeX\IntXTypeInterface;
+use Takeoto\Type\Contract\TypeX\MixedXTypeInterface;
+use Takeoto\Type\Contract\TypeX\StringXTypeInterface;
 use Takeoto\Type\Scheme\MethodScheme;
 use Takeoto\Type\Type;
 use Takeoto\Type\Utility\CallUtility;
@@ -42,12 +44,16 @@ use Takeoto\Type\Utility\CallUtility;
  * @method null|string|int|float nullOrNumeric()
  * @method int|string intOrStringInt()
  */
-class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInterface
+class MixedX implements MixedXTypeInterface, TransitionalInterface, MagicCallableInterface
 {
     public function __construct(private mixed $value)
     {
     }
 
+    /**
+     * @param mixed $value
+     * @return self
+     */
     public static function new(mixed $value): self
     {
         return new self($value);
@@ -144,6 +150,55 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
     }
 
     /**
+     * The scheme for self::arrayX.
+     *
+     * @return MethodSchemeInterface
+     */
+    public static function arrayXScheme(): MethodSchemeInterface
+    {
+        return MethodScheme::new('arrayX')
+            ->return(ArrayX::class);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function stringX(): StringX
+    {
+        return StringX::new($this->value);
+    }
+
+    /**
+     * The scheme for self::stringX.
+     *
+     * @return MethodSchemeInterface
+     */
+    public static function stringXScheme(): MethodSchemeInterface
+    {
+        return MethodScheme::new('stringX')
+            ->return(StringX::class);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function intX(): IntXTypeInterface
+    {
+        return IntX::new($this->value);
+    }
+
+    /**
+     * The scheme for self::intX.
+     *
+     * @return MethodSchemeInterface
+     */
+    public static function intXScheme(): MethodSchemeInterface
+    {
+        return MethodScheme::new('intX')
+            ->return(IntX::class);
+    }
+
+    /**
      * @return iterable<array-key,mixed>
      * @throws \Throwable
      */
@@ -223,7 +278,6 @@ class MixedX implements MixedXInterface, TransitionalInterface, MagicCallableInt
 
         return CallUtility::callTransit($method, $arguments, $this);
     }
-
     /**
      * @inheritDoc
      */
