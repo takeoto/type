@@ -75,7 +75,7 @@ class TypeUtility
         }
 
         self::throwWrongTypeException(\sprintf(
-            $errorMessage ?? 'Expected %s, got %s',
+            $errorMessage ?? 'Expected %s type, %s given',
             $type,
             self::typeToString($value),
         ));

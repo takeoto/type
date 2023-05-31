@@ -13,12 +13,15 @@
         }
     ],
     "require": {
-        "php": ">=8.0",
-        "ext-ctype": "*"
+        "php": ">=8.0"
     },
     "autoload": {
         "psr-4": {
-            "Takeoto\\Type\\": "src/"
+            "Takeoto\\Type\\": "src/",
+            "Takeoto\\Type\\Tests\\": "tests/"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10"
     }
 }

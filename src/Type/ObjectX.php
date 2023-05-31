@@ -6,6 +6,7 @@ namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Contract\TypeX\ObjectXTypeInterface;
 use Takeoto\Type\Type;
+use Takeoto\Type\Utility\TypeUtility;
 
 class ObjectX implements ObjectXTypeInterface
 {
@@ -55,7 +56,7 @@ class ObjectX implements ObjectXTypeInterface
     public function instanceOf(string $class): object
     {
         if (!$this->object instanceof $class) {
-            throw new \RuntimeException(sprintf(
+            TypeUtility::throwWrongTypeException(sprintf(
                 'Expected an instance of %2$s. Got: %s',
                 \get_class($this->object),
                 $class,
