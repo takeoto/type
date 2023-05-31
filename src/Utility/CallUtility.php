@@ -299,21 +299,29 @@ final class CallUtility
 
         return array_reduce(
             $parsedMethod,
-            function(?string $carry, array $part): string {
+            function(array $carry, array $part): array {
                 $value = $part['value'];
 
-                if ($part['type'] === TypeUtility::EXPR_CLAUSE) {
-                    $value = [
-                        self::EXPR_CAUSE_OR => '|',
-                        self::EXPR_CAUSE_AND => '&',
-                    ][$value] ?? throw new \LogicException(sprintf('Unknown a value "%s" of a clause.', $value));
+                switch ($part['type']) {
+                    case TypeUtility::EXPR_CLAUSE:
+                        $value = [
+                            self::EXPR_CAUSE_OR => '|',
+                            self::EXPR_CAUSE_AND => '&',
+                        ][$value] ?? throw new \LogicException(sprintf('Unknown a value "%s" of a clause.', $value));
+                        break;
+                    case TypeUtility::EXPR_TYPE_MODIFIER:
+                        $carry[1] = $value;
+                        return $carry;
+                    case TypeUtility::EXPR_TYPE:
+                        $value = $carry[1] === null ? $value : $carry[1] . ucfirst($value);
+                        $carry[1] = null;
                 }
 
                 # need improve [notInt&NotString - case]
-                return $carry === '' ? $value : $carry . ucfirst($value);
+                return [$carry[0] . $value, $carry[1]];
             },
-            '',
-        );
+            ['', null],
+        )[0];
     }
 
     /**

@@ -2,7 +2,7 @@
     "name": "takeoto/type",
     "description": "The tool for the confident value usage.",
     "type": "library",
-    "keywords": ["takeoto", "type", "validation", "strict", "check", "assert", "php"],
+    "keywords": ["takeoto", "type", "validation", "strict", "check", "assert", "mixed", "php"],
     "license": "MIT",
     "minimum-stability": "dev",
     "authors": [

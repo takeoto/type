@@ -574,6 +574,168 @@ class TypeTest extends TestCase
     }
 
     #[DataProvider('baseDynamicTypesProvider')]
+    public function testNotTypes(string $method, mixed $value, ?string $error, ?string $exception): void
+    {
+        if ($exception !== null) {
+            self::expectException(\InvalidArgumentException::class);
+            self::expectExceptionMessage($exception);
+        }
+
+        self::assertSame($value, call_user_func([Type::class, $method], $value, $error));
+    }
+
+    public static function dynamicTypesProvider(): iterable
+    {
+        return [
+
+            ['nullOrInt', 0, null, null],
+            ['nullOrInt', 1, null, null],
+            ['nullOrInt', '1', null, 'Expected null|int type, string given'],
+            ['nullOrInt', '1Abc', null, 'Expected null|int type, string given'],
+            ['nullOrInt', '', null, 'Expected null|int type, string given'],
+            ['nullOrInt', 0.0, null, 'Expected null|int type, double given'],
+            ['nullOrInt', 1.1, null, 'Expected null|int type, double given'],
+            ['nullOrInt', new \stdClass(), null, 'Expected null|int type, stdClass given'],
+            ['nullOrInt', [], null, 'Expected null|int type, array given'],
+            ['nullOrInt', [1], null, 'Expected null|int type, array given'],
+            ['nullOrInt', true, null, 'Expected null|int type, boolean given'],
+            ['nullOrInt', false, null, 'Expected null|int type, boolean given'],
+            ['nullOrInt', static fn() => null, null, 'Expected null|int type, Closure given'],
+            ['nullOrInt', [Type::class, 'int'], null, 'Expected null|int type, array given'],
+            ['nullOrInt', null, null, null],
+            ['nullOrInt', (fn(): iterable => yield null)(), null, 'Expected null|int type, Generator given'],
+            ['nullOrInt', '', 'Error [%s type, given %s]', 'Error [null|int type, given string]'],
+
+            ['nullOrFloat', 0, null, 'Expected null|float type, integer given'],
+            ['nullOrFloat', 1, null, 'Expected null|float type, integer given'],
+            ['nullOrFloat', '1', null, 'Expected null|float type, string given'],
+            ['nullOrFloat', '1Abc', null, 'Expected null|float type, string given'],
+            ['nullOrFloat', '', null, 'Expected null|float type, string given'],
+            ['nullOrFloat', 0.0, null, null],
+            ['nullOrFloat', 1.1, null, null],
+            ['nullOrFloat', new \stdClass(), null, 'Expected null|float type, stdClass given'],
+            ['nullOrFloat', [], null, 'Expected null|float type, array given'],
+            ['nullOrFloat', [1], null, 'Expected null|float type, array given'],
+            ['nullOrFloat', true, null, 'Expected null|float type, boolean given'],
+            ['nullOrFloat', false, null, 'Expected null|float type, boolean given'],
+            ['nullOrFloat', static fn() => null, null, 'Expected null|float type, Closure given'],
+            ['nullOrFloat', [Type::class, 'float'], null, 'Expected null|float type, array given'],
+            ['nullOrFloat', null, null, null],
+            ['nullOrFloat', (fn(): iterable => yield null)(), null, 'Expected null|float type, Generator given'],
+            ['nullOrFloat', '', 'Error [%s type, given %s]', 'Error [null|float type, given string]'],
+
+            ['nullOrString', 0, null, 'Expected null|string type, integer given'],
+            ['nullOrString', 1, null, 'Expected null|string type, integer given'],
+            ['nullOrString', '1', null, null],
+            ['nullOrString', '1Abc', null, null],
+            ['nullOrString', '', null, null],
+            ['nullOrString', 0.0, null, 'Expected null|string type, double given'],
+            ['nullOrString', 1.1, null, 'Expected null|string type, double given'],
+            ['nullOrString', new \stdClass(), null, 'Expected null|string type, stdClass given'],
+            ['nullOrString', [], null, 'Expected null|string type, array given'],
+            ['nullOrString', [1], null, 'Expected null|string type, array given'],
+            ['nullOrString', true, null, 'Expected null|string type, boolean given'],
+            ['nullOrString', false, null, 'Expected null|string type, boolean given'],
+            ['nullOrString', static fn() => null, null, 'Expected null|string type, Closure given'],
+            ['nullOrString', [Type::class, 'string'], null, 'Expected null|string type, array given'],
+            ['nullOrString', null, null, null],
+            ['nullOrString', (fn(): iterable => yield null)(), null, 'Expected null|string type, Generator given'],
+            ['nullOrString', 0, 'Error [%s type, given %s]', 'Error [null|string type, given integer]'],
+
+            ['nullOrObject', 0, null, 'Expected null|object type, integer given'],
+            ['nullOrObject', 1, null, 'Expected null|object type, integer given'],
+            ['nullOrObject', '1', null, 'Expected null|object type, string given'],
+            ['nullOrObject', '1Abc', null, 'Expected null|object type, string given'],
+            ['nullOrObject', '', null, 'Expected null|object type, string given'],
+            ['nullOrObject', 0.0, null, 'Expected null|object type, double given'],
+            ['nullOrObject', 1.1, null, 'Expected null|object type, double given'],
+            ['nullOrObject', new \stdClass(), null, null],
+            ['nullOrObject', [], null, 'Expected null|object type, array given'],
+            ['nullOrObject', [1], null, 'Expected null|object type, array given'],
+            ['nullOrObject', true, null, 'Expected null|object type, boolean given'],
+            ['nullOrObject', false, null, 'Expected null|object type, boolean given'],
+            ['nullOrObject', static fn() => null, null, null],
+            ['nullOrObject', [Type::class, 'object'], null, 'Expected null|object type, array given'],
+            ['nullOrObject', null, null, null],
+            ['nullOrObject', (fn(): iterable => yield null)(), null, null],
+            ['nullOrObject', 0, 'Error [%s type, given %s]', 'Error [null|object type, given integer]'],
+
+            ['nullOrArray', 0, null, 'Expected null|array type, integer given'],
+            ['nullOrArray', 1, null, 'Expected null|array type, integer given'],
+            ['nullOrArray', '1', null, 'Expected null|array type, string given'],
+            ['nullOrArray', '1Abc', null, 'Expected null|array type, string given'],
+            ['nullOrArray', '', null, 'Expected null|array type, string given'],
+            ['nullOrArray', 0.0, null, 'Expected null|array type, double given'],
+            ['nullOrArray', 1.1, null, 'Expected null|array type, double given'],
+            ['nullOrArray', new \stdClass(), null, 'Expected null|array type, stdClass given'],
+            ['nullOrArray', [], null, null],
+            ['nullOrArray', [1], null, null],
+            ['nullOrArray', true, null, 'Expected null|array type, boolean given'],
+            ['nullOrArray', false, null, 'Expected null|array type, boolean given'],
+            ['nullOrArray', static fn() => null, null, 'Expected null|array type, Closure given'],
+            ['nullOrArray', [Type::class, 'array'], null, null],
+            ['nullOrArray', null, null, null],
+            ['nullOrArray', (fn(): iterable => yield null)(), null, 'Expected null|array type, Generator given'],
+            ['nullOrArray', 0, 'Error [%s type, given %s]', 'Error [null|array type, given integer]'],
+
+            ['nullOrBool', 0, null, 'Expected null|bool type, integer given'],
+            ['nullOrBool', 1, null, 'Expected null|bool type, integer given'],
+            ['nullOrBool', '1', null, 'Expected null|bool type, string given'],
+            ['nullOrBool', '1Abc', null, 'Expected null|bool type, string given'],
+            ['nullOrBool', '', null, 'Expected null|bool type, string given'],
+            ['nullOrBool', 0.0, null, 'Expected null|bool type, double given'],
+            ['nullOrBool', 1.1, null, 'Expected null|bool type, double given'],
+            ['nullOrBool', new \stdClass(), null, 'Expected null|bool type, stdClass given'],
+            ['nullOrBool', [], null, 'Expected null|bool type, array given'],
+            ['nullOrBool', [1], null, 'Expected null|bool type, array given'],
+            ['nullOrBool', true, null, null],
+            ['nullOrBool', false, null, null],
+            ['nullOrBool', static fn() => null, null, 'Expected null|bool type, Closure given'],
+            ['nullOrBool', [Type::class, 'bool'], null, 'Expected null|bool type, array given'],
+            ['nullOrBool', null, null, null],
+            ['nullOrBool', (fn(): iterable => yield null)(), null, 'Expected null|bool type, Generator given'],
+            ['nullOrBool', 0, 'Error [%s type, given %s]', 'Error [null|bool type, given integer]'],
+
+            ['nullOrCallable', 0, null, 'Expected null|callable type, integer given'],
+            ['nullOrCallable', 1, null, 'Expected null|callable type, integer given'],
+            ['nullOrCallable', '1', null, 'Expected null|callable type, string given'],
+            ['nullOrCallable', '1Abc', null, 'Expected null|callable type, string given'],
+            ['nullOrCallable', '', null, 'Expected null|callable type, string given'],
+            ['nullOrCallable', 0.0, null, 'Expected null|callable type, double given'],
+            ['nullOrCallable', 1.1, null, 'Expected null|callable type, double given'],
+            ['nullOrCallable', new \stdClass(), null, 'Expected null|callable type, stdClass given'],
+            ['nullOrCallable', [], null, 'Expected null|callable type, array given'],
+            ['nullOrCallable', [1], null, 'Expected null|callable type, array given'],
+            ['nullOrCallable', true, null, 'Expected null|callable type, boolean given'],
+            ['nullOrCallable', false, null, 'Expected null|callable type, boolean given'],
+            ['nullOrCallable', static fn() => null, null, null],
+            ['nullOrCallable', [Type::class, 'callable'], null, null],
+            ['nullOrCallable', null, null, null],
+            ['nullOrCallable', (fn(): iterable => yield null)(), null, 'Expected null|callable type, Generator given'],
+            ['nullOrCallable', 0, 'Error [%s type, given %s]', 'Error [null|callable type, given integer]'],
+
+            ['nullOrNull', 0, null, 'Expected null|null type, integer given'],
+            ['nullOrNull', 1, null, 'Expected null|null type, integer given'],
+            ['nullOrNull', '1', null, 'Expected null|null type, string given'],
+            ['nullOrNull', '1Abc', null, 'Expected null|null type, string given'],
+            ['nullOrNull', '', null, 'Expected null|null type, string given'],
+            ['nullOrNull', 0.0, null, 'Expected null|null type, double given'],
+            ['nullOrNull', 1.1, null, 'Expected null|null type, double given'],
+            ['nullOrNull', new \stdClass(), null, 'Expected null|null type, stdClass given'],
+            ['nullOrNull', [], null, 'Expected null|null type, array given'],
+            ['nullOrNull', [1], null, 'Expected null|null type, array given'],
+            ['nullOrNull', true, null, 'Expected null|null type, boolean given'],
+            ['nullOrNull', false, null, 'Expected null|null type, boolean given'],
+            ['nullOrNull', static fn() => null, null, 'Expected null|null type, Closure given'],
+            ['nullOrNull', [Type::class, 'null'], null, 'Expected null|null type, array given'],
+            ['nullOrNull', null, null, null],
+            ['nullOrNull', (fn(): iterable => yield null)(), null, 'Expected null|null type, Generator given'],
+            ['nullOrNull', 'NOT NULL', 'Error [%s type, given %s]', 'Error [null|null type, given string]'],
+
+        ];
+    }
+
+    #[DataProvider('dynamicTypesProvider')]
     public function testDynamicTypes(string $method, mixed $value, ?string $error, ?string $exception): void
     {
         if ($exception !== null) {
