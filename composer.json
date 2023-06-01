@@ -23,5 +23,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^10"
+    },
+    "archive": {
+        "exclude": ["tests", "*phpunit.xml"]
     }
 }
