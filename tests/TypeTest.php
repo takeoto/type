@@ -587,7 +587,6 @@ class TypeTest extends TestCase
     public static function dynamicTypesProvider(): iterable
     {
         return [
-
             ['nullOrInt', 0, null, null],
             ['nullOrInt', 1, null, null],
             ['nullOrInt', '1', null, 'Expected null|int type, string given'],
@@ -965,7 +964,6 @@ class TypeTest extends TestCase
             ['intOrArrayAndNotEmptyOrNull', null, null, null],
             ['intOrArrayAndNotEmptyOrNull', (fn(): iterable => yield null)(), null, 'Expected int|array&notEmpty|null type, Generator given'],
             ['intOrArrayAndNotEmptyOrNull', '', 'Error [%s type, given %s]', 'Error [int|array&notEmpty|null type, given string]'],
-
         ];
     }
 
@@ -978,5 +976,115 @@ class TypeTest extends TestCase
         }
 
         self::assertSame($value, call_user_func([Type::class, $method], $value, $error));
+    }
+
+    public static function invalidTypesProvider(): iterable
+    {
+        return [
+            [
+                'intOrArrayAndNotEmptyOrNull',
+                [],
+                \InvalidArgumentException::class,
+                'The first argument of intOrArrayAndNotEmptyOrNull method should be a value.'
+            ],
+            [
+                'intOrArrayAndNotEmptyOrNull',
+                [1, 'Some custom error', [3]],
+                null,
+                null,
+            ],
+            [
+                'intIntOrArrayAndNotEmptyOrNull',
+                [1],
+                \RuntimeException::class,
+                'Method "intIntOrArrayAndNotEmptyOrNull" does not exist.',
+            ],
+            [
+                'notNotIntOrArrayAndNotEmptyOrNull',
+                [1],
+                \RuntimeException::class,
+                'Method "notNotIntOrArrayAndNotEmptyOrNull" does not exist.',
+            ],
+            [
+                'IntOrArrayAndNotEmptyOrNull',
+                [1],
+                null,
+                null,
+            ],
+            [
+                'INTOrArrayAndNotEmptyOrNull',
+                [1],
+                \RuntimeException::class,
+                'Method "INTOrArrayAndNotEmptyOrNull" does not exist.',
+            ],
+            [
+                'intOrOrArrayAndNotEmptyOrNull',
+                [1],
+                \RuntimeException::class,
+                'Method "intOrOrArrayAndNotEmptyOrNull" does not exist.',
+            ],
+            [
+                'intOrArrayAndAndNotEmptyOrNull',
+                [1],
+                \RuntimeException::class,
+                'Method "intOrArrayAndAndNotEmptyOrNull" does not exist.',
+            ],
+            [
+                'intOrArRayAndNotEmptyOrNull',
+                [1],
+                \RuntimeException::class,
+                'Method "intOrArRayAndNotEmptyOrNull" does not exist.',
+            ],
+            [
+                'intOrArrayAndOrNotEmptyOrNull',
+                [1],
+                \RuntimeException::class,
+                'Method "intOrArrayAndOrNotEmptyOrNull" does not exist.',
+            ],
+            [
+                'intOrArrayOrNotEmptyOr',
+                [1],
+                \RuntimeException::class,
+                'Method "intOrArrayOrNotEmptyOr" does not exist.',
+            ],
+            [
+                'intOrArrayOrNotEmptyAnd',
+                [1],
+                \RuntimeException::class,
+                'Method "intOrArrayOrNotEmptyAnd" does not exist.',
+            ],
+            [
+                'inT',
+                [1],
+                null,
+                null,
+            ],
+            [
+                'notInT',
+                [1],
+                \RuntimeException::class,
+                'Method "notInT" does not exist.',
+            ],
+            [
+                'intOrPikachu',
+                [1],
+                \RuntimeException::class,
+                'Method "intOrPikachu" does not exist.',
+            ],
+        ];
+    }
+
+    #[DataProvider('invalidTypesProvider')]
+    public function testInvalidTypes(string $method, array $args, ?string $exception, ?string $exceptionMessage): void
+    {
+        if ($exception !== null) {
+            self::expectException($exception);
+        }
+
+        if ($exceptionMessage !== null) {
+            self::expectExceptionMessage($exceptionMessage);
+        }
+
+        self::assertSame(reset($args), call_user_func_array([Type::class, $method], $args));
     }
 }
