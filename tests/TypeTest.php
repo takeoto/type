@@ -1227,6 +1227,22 @@ class TypeTest extends TestCase
                 WrongTypeException::class,
                 'errorIf message notArray|int',
             ],
+            [
+                'arrayXGetErrorIfNotArrayOrIntOr',
+                [['key0' => 1], 'key0', 'errorIf message %s'],
+                null,
+                \RuntimeException::class,
+                'Failed to build the call chain "arrayXGetErrorIfNotArrayOrIntOr", ' .
+                'the scheme for the method "or" is missing',
+            ],
+            [
+                'arrayXXGetErrorIfNotArrayOrInt',
+                [['key0' => 1], 'key0', 'errorIf message %s'],
+                null,
+                \RuntimeException::class,
+                'Failed to build the call chain "arrayXXGetErrorIfNotArrayOrInt", ' .
+                'the scheme for the method "xGetErrorIfNotArrayOrInt" is missing',
+            ],
         ];
     }
 

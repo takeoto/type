@@ -203,9 +203,9 @@ final class CallUtility
         foreach (self::iterateMethodsSchemas($method, $target) as $methodName => $methodScheme) {
             if ($methodScheme === null) {
                 throw new \RuntimeException(sprintf(
-                    'Arguments schemas for "%s" in "%s" method does not exists!',
-                    $methodName,
+                    'Failed to build the call chain "%s", the scheme for the method "%s" is missing',
                     $method,
+                    $methodName,
                 ));
             }
 

@@ -14,6 +14,7 @@ class Type implements MagicStaticCallableInterface, TransitionalInterface
     use PseudoTypesTrait;
     use CustomTypesTrait;
     use XTypesTrait;
+    use ConditionsTrait;
 
     /**
      * @param mixed $value
