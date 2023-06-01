@@ -7,6 +7,8 @@ use Takeoto\Type\Scheme\MethodScheme;
 
 trait ConditionsTrait
 {
+    use DynamicTypesTrait;
+
     public static function is(mixed $value): IsCondition
     {
         return new IsCondition($value);

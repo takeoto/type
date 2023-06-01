@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Takeoto\Type\Type;
 
 use Takeoto\Type\Condition\ErrorIfCondition;
+use Takeoto\Type\Condition\IsCondition;
 use Takeoto\Type\Contract\MagicCallableInterface;
 use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
 use Takeoto\Type\Contract\TransitionalInterface;
@@ -253,6 +254,17 @@ class MixedX implements MixedXTypeInterface, TransitionalInterface, MagicCallabl
         return MethodScheme::new('errorIf')
             ->arg(0, 'string')
             ->return(ErrorIfCondition::class);
+    }
+
+    public function is(): IsCondition
+    {
+        return new IsCondition($this->value);
+    }
+
+    public static function isScheme(): MethodScheme
+    {
+        return MethodScheme::new('is')
+            ->return(IsCondition::class);
     }
 
     /**

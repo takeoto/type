@@ -1199,6 +1199,7 @@ class TypeTest extends TestCase
                 null,
                 null,
             ],
+            #region errorIf condition
             [
                 'arrayXGetErrorIfArray',
                 [['key0' => ['key0.1' => 'value0']], 'key0', 'errorIf message %s'],
@@ -1219,6 +1220,20 @@ class TypeTest extends TestCase
                 ['key0.1' => 'value0'],
                 null,
                 null,
+            ],
+            [
+                'arrayXGetErrorIfNotArrayOrInt',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'errorIf message %s', 1],
+                ['key0.1' => 'value0'],
+                ArrayXKeyNotFoundException::class,
+                'The key "errorIf message %s" does not exists',
+            ],
+            [
+                'arrayXGetErrorIfNotArrayOrInt',
+                [['key0' => ['key0.1' => 'value0']], 'IF not array error', 'key0', 'errorIf message %s', 1],
+                ['key0.1' => 'value0'],
+                \RuntimeException::class,
+                'The "arrayXGetErrorIfNotArrayOrInt" method allows 4 arguments, 5 is given',
             ],
             [
                 'arrayXGetErrorIfNotArrayOrInt',
@@ -1243,6 +1258,15 @@ class TypeTest extends TestCase
                 'Failed to build the call chain "arrayXXGetErrorIfNotArrayOrInt", ' .
                 'the scheme for the method "xGetErrorIfNotArrayOrInt" is missing',
             ],
+            #endregion
+            #region IS condition
+            ['isInt', [1], true, null, null],
+            ['isString', [1], false, null, null],
+            ['isStringAndNotStringIntAndNotEmpty', ['ABC'], true, null, null],
+            ['arrayXGetIsInt', [[0 => 1], 0], true, null, null],
+            ['arrayXGetIsNotInt', [[0 => 1], 0], false, null, null],
+            ['arrayXGetIsStringAndNotEmpty', [[0 => '1'], 0], true, null, null],
+            #endregion
         ];
     }
 
