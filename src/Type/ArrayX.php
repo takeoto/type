@@ -55,7 +55,7 @@ class ArrayX implements ArrayXTypeInterface, MagicCallableInterface, Transitiona
     public function get(int|string $key): MixedX
     {
         if (!$this->has($key)) {
-            throw new ArrayXKeyNotFoundException(sprintf('The key "%s" does not exists!', $key));
+            throw new ArrayXKeyNotFoundException(sprintf('The key "%s" does not exists', $key));
         }
 
         return MixedX::new($this->array[$key]);

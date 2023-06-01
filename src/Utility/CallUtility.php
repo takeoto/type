@@ -222,16 +222,16 @@ final class CallUtility
 
         if ($schemesReqArgsCount > count($arguments)) {
             throw new \RuntimeException(sprintf(
-                'Required %d arguments of "%s" method, %d given!',
-                $schemesReqArgsCount,
+                'The "%s" method requires %d arguments, %d is given',
                 $method,
+                $schemesReqArgsCount,
                 $argumentsCount,
             ));
         }
 
         if ($argumentsCount > $schemesArgsCount) {
             throw new \RuntimeException(sprintf(
-                'Arguments count of "%s" method %d, %d given!',
+                'The "%s" method allows %d arguments, %d is given',
                 $method,
                 $schemesArgsCount,
                 $argumentsCount,

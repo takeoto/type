@@ -7,7 +7,10 @@ namespace Takeoto\tests;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Takeoto\Type\Exception\ArrayXKeyNotFoundException;
+use Takeoto\Type\Exception\WrongTypeException;
 use Takeoto\Type\Type;
+use Takeoto\Type\Type\MixedX;
 
 #[CoversClass(Type::class)]
 class TypeTest extends TestCase
@@ -165,7 +168,7 @@ class TypeTest extends TestCase
     public function testBaseTypes(string $method, mixed $value, ?string $error, ?string $exception): void
     {
         if ($exception !== null) {
-            self::expectException(\InvalidArgumentException::class);
+            self::expectException(WrongTypeException::class);
             self::expectExceptionMessage($exception);
         }
 
@@ -254,7 +257,7 @@ class TypeTest extends TestCase
     public function testPseudoTypes(string $method, mixed $value, ?string $error, ?string $exception): void
     {
         if ($exception !== null) {
-            self::expectException(\InvalidArgumentException::class);
+            self::expectException(WrongTypeException::class);
             self::expectExceptionMessage($exception);
         }
 
@@ -307,7 +310,7 @@ class TypeTest extends TestCase
     public function testCustomTypes(string $method, mixed $value, ?string $error, ?string $exception): void
     {
         if ($exception !== null) {
-            self::expectException(\InvalidArgumentException::class);
+            self::expectException(WrongTypeException::class);
             self::expectExceptionMessage($exception);
         }
 
@@ -577,7 +580,7 @@ class TypeTest extends TestCase
     public function testNotTypes(string $method, mixed $value, ?string $error, ?string $exception): void
     {
         if ($exception !== null) {
-            self::expectException(\InvalidArgumentException::class);
+            self::expectException(WrongTypeException::class);
             self::expectExceptionMessage($exception);
         }
 
@@ -971,7 +974,7 @@ class TypeTest extends TestCase
     public function testDynamicTypes(string $method, mixed $value, ?string $error, ?string $exception): void
     {
         if ($exception !== null) {
-            self::expectException(\InvalidArgumentException::class);
+            self::expectException(WrongTypeException::class);
             self::expectExceptionMessage($exception);
         }
 
@@ -1086,5 +1089,166 @@ class TypeTest extends TestCase
         }
 
         self::assertSame(reset($args), call_user_func_array([Type::class, $method], $args));
+    }
+
+    public static function transitCallProvider(): iterable
+    {
+        return [
+            [
+                'arrayX',
+                ['{{ not array }}'],
+                null,
+                WrongTypeException::class,
+                'Expected array type, string given',
+            ],
+            [
+                'arrayXGet',
+                ['{{ not array }}'],
+                null,
+                \RuntimeException::class,
+                'The "arrayXGet" method requires 2 arguments, 1 is given',
+            ],
+            [
+                'arrayXGet',
+                [1, 2],
+                null,
+                WrongTypeException::class,
+                'Expected array type, integer given',
+            ],
+            [
+                'arrayXGet',
+                [1, 'Custom error message %s !== %s', 2],
+                null,
+                WrongTypeException::class,
+                'Custom error message array !== integer',
+            ],
+            [
+                'arrayXGet',
+                [[], 'key0'],
+                null,
+                ArrayXKeyNotFoundException::class,
+                'The key "key0" does not exists',
+            ],
+            [
+                'arrayXGet',
+                [['key0' => null], 'key0'],
+                MixedX::class,
+                null,
+                null,
+            ],
+            [
+                'arrayXGetMixed',
+                [['key0' => 'value0'], 'key0'],
+                'value0',
+                null,
+                null,
+            ],
+            [
+                'arrayXGetInt',
+                [['key0' => 'value0'], 'key0'],
+                null,
+                WrongTypeException::class,
+                'Expected int type, string given',
+            ],
+            [
+                'arrayXGetString',
+                [['key0' => 'value0'], 'key0'],
+                'value0',
+                null,
+                null,
+            ],
+            [
+                'arrayXGetStringOrArray',
+                [['key0' => ['value0']], 'key0'],
+                ['value0'],
+                null,
+                null,
+            ],
+            [
+                'arrayXGetArrayXGet',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'key0.1'],
+                MixedX::class,
+                null,
+                null,
+            ],
+            [
+                'arrayXGetArrayXGet',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'key0.2'],
+                MixedX::class,
+                ArrayXKeyNotFoundException::class,
+                'The key "key0.2" does not exists',
+            ],
+            [
+                'arrayXGetArrayXGetInt',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'key0.1'],
+                null,
+                WrongTypeException::class,
+                'Expected int type, string given',
+            ],
+            [
+                'arrayXGetArrayXGetIntOrString',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'key0.1'],
+                'value0',
+                null,
+                null,
+            ],
+            [
+                'arrayXGetArray',
+                [['key0' => ['key0.1' => 'value0']], 'Custom error', 'key0'],
+                ['key0.1' => 'value0'],
+                null,
+                null,
+            ],
+            [
+                'arrayXGetErrorIfArray',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'errorIf message %s'],
+                ['key0.1' => 'value0'],
+                WrongTypeException::class,
+                'errorIf message array',
+            ],
+            [
+                'arrayXGetErrorIfNotArray',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'errorIf message %s'],
+                ['key0.1' => 'value0'],
+                null,
+                null,
+            ],
+            [
+                'arrayXGetErrorIfNotArrayOrInt',
+                [['key0' => ['key0.1' => 'value0']], 'key0', 'errorIf message %s'],
+                ['key0.1' => 'value0'],
+                null,
+                null,
+            ],
+            [
+                'arrayXGetErrorIfNotArrayOrInt',
+                [['key0' => 1], 'key0', 'errorIf message %s'],
+                null,
+                WrongTypeException::class,
+                'errorIf message notArray|int',
+            ],
+        ];
+    }
+
+    #[DataProvider('transitCallProvider')]
+    public function testTransitCall(
+        string $method,
+        array $args,
+        mixed $expect,
+        ?string $exception,
+        ?string $exceptionMessage,
+    ): void {
+        if ($exception !== null) {
+            self::expectException($exception);
+        }
+
+        if ($exceptionMessage !== null) {
+            self::expectExceptionMessage($exceptionMessage);
+        }
+
+        $result = call_user_func_array([Type::class, $method], $args);
+        is_string($expect) && class_exists($expect)
+            ? self::assertInstanceOf($expect, $result)
+            : self::assertSame($expect, $result);
     }
 }

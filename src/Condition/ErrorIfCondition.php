@@ -57,7 +57,7 @@ final class ErrorIfCondition implements MagicCallableInterface, TransitionalInte
         $isVerified = TypeUtility::verifyType($this->value, $type);
 
         if ($isVerified) {
-            throw new \RuntimeException(sprintf($this->error, $type));
+            TypeUtility::throwWrongTypeException(\sprintf($this->error, $type));
         }
 
         return $this->value;
