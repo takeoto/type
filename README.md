@@ -49,7 +49,8 @@ Type::arrayXGetInt($array, 'key0');
 Type::arrayXGetErrorIfNotInt($array, 'key0', 'Yours custom error message!');
 
 # Multiple type
-Type::arrayXGetStringX($array, 'key0')->lengthMin(5)
+Type::arrayXGetStringX($array, 'key0')->lengthMin(5);
+Type::arrayXGetStringXlengthMin($array, 'key0', 5);
 Type::arrayXGetErrorIfNotNullOrString($array, 'key0', 'Yours custom error message!');
 Type::notIntAndNotString(123); 
 

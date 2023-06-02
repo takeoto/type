@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Takeoto\Type\Type;
 
+use Takeoto\Type\Contract\Scheme\MethodSchemeInterface;
+use Takeoto\Type\Contract\TransitionalInterface;
 use Takeoto\Type\Contract\TypeX\ObjectXTypeInterface;
+use Takeoto\Type\Scheme\MethodScheme;
 use Takeoto\Type\Type;
+use Takeoto\Type\Utility\CallUtility;
 use Takeoto\Type\Utility\TypeUtility;
 
-class ObjectX implements ObjectXTypeInterface
+class ObjectX implements ObjectXTypeInterface, TransitionalInterface
 {
     private object $object;
 
@@ -67,10 +71,38 @@ class ObjectX implements ObjectXTypeInterface
     }
 
     /**
+     * The scheme for self::instanceOf.
+     *
+     * @return MethodSchemeInterface
+     */
+    public static function instanceOfScheme(): MethodSchemeInterface
+    {
+        return MethodScheme::new('instanceOf')
+            ->arg(0, 'string')
+            ->return('object');
+    }
+
+    /**
      * @inheritDoc
      */
     public function object(): object
     {
         return $this->object;
+    }
+
+    /**
+     * The scheme for self::object.
+     *
+     * @return MethodSchemeInterface
+     */
+    public static function objectScheme(): MethodSchemeInterface
+    {
+        return MethodScheme::new('object')
+            ->return('object');
+    }
+
+    public static function getMethodScheme(string $method): ?MethodSchemeInterface
+    {
+        return CallUtility::getSelfMethodSchema($method, static::class);
     }
 }

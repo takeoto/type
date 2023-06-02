@@ -1237,6 +1237,13 @@ class TypeTest extends TestCase
             ],
             [
                 'arrayXGetErrorIfNotArrayOrInt',
+                [['key0' => ['key0.1' => 'value0']], 1, 'key0', 'errorIf message %s'],
+                ['key0.1' => 'value0'],
+                WrongTypeException::class,
+                'Expected string|null type, integer given',
+            ],
+            [
+                'arrayXGetErrorIfNotArrayOrInt',
                 [['key0' => 1], 'key0', 'errorIf message %s'],
                 null,
                 WrongTypeException::class,

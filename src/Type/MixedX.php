@@ -261,7 +261,12 @@ class MixedX implements MixedXTypeInterface, TransitionalInterface, MagicCallabl
         return new IsCondition($this->value);
     }
 
-    public static function isScheme(): MethodScheme
+    /**
+     * The scheme for self::is.
+     *
+     * @return MethodSchemeInterface
+     */
+    public static function isScheme(): MethodSchemeInterface
     {
         return MethodScheme::new('is')
             ->return(IsCondition::class);
